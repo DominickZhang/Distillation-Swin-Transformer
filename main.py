@@ -26,6 +26,7 @@ from optimizer import build_optimizer
 from logger import create_logger
 from utils import load_checkpoint, save_checkpoint, get_grad_norm, auto_resume_helper, reduce_tensor
 
+
 try:
     # noinspection PyUnresolvedReferences
     from apex import amp
@@ -65,6 +66,13 @@ def parse_option():
 
     # distributed training
     parser.add_argument("--local_rank", type=int, required=True, help='local rank for DistributedDataParallel')
+
+    # Jinnian: add distillation parameters
+    parser.add_argument('--do_distill', action='store_true', help='start distillation')
+    parser.add_argument('--teacher', default='', type=str, metavar='PATH',
+                        help='the path for teacher model')
+    parser.add_argument('--temperature', default=1.0, type=float,
+                        help='the temperature for distillation loss')
 
     args, unparsed = parser.parse_known_args()
 
@@ -119,7 +127,7 @@ def main(config):
 
     if config.MODEL.RESUME:
         max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
-        acc1, acc5, loss = validate(config, data_loader_val, model)
+        acc1, acc5, loss = validate(config, data_loader_val, model, logger)
         logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
         if config.EVAL_MODE:
             return
@@ -137,7 +145,7 @@ def main(config):
         if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
             save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
 
-        acc1, acc5, loss = validate(config, data_loader_val, model)
+        acc1, acc5, loss = validate(config, data_loader_val, model, logger)
         logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
         max_accuracy = max(max_accuracy, acc1)
         logger.info(f'Max accuracy: {max_accuracy:.2f}%')
@@ -229,7 +237,7 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
 
 
 @torch.no_grad()
-def validate(config, data_loader, model):
+def validate(config, data_loader, model, logger):
     criterion = torch.nn.CrossEntropyLoss()
     model.eval()
 
@@ -296,6 +304,11 @@ def throughput(data_loader, model, logger):
 
 
 if __name__ == '__main__':
+    ## Run evaluation
+    # python -m torch.distributed.launch --nproc_per_node 1 --master_port 1234 main.py --eval --cfg configs/swin_large_patch4_window7_224.yaml --resume trained_models/swin_large_patch4_window7_224_22kto1k.pth --data-path datasets/
+    # python -m torch.distributed.launch --nproc_per_node 1 --master_port 1234 main.py --eval --cfg configs/swin_tiny_patch4_window7_224.yaml --resume trained_models/swin_tiny_patch4_window7_224.pth --data-path datasets/
+    # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  main.py --cfg configs/swin_tiny_patch4_window7_224.yaml --data-path datasets/ --batch-size 256
+
     _, config = parse_option()
 
     if config.AMP_OPT_LEVEL != "O0":

@@ -180,6 +180,13 @@ _C.THROUGHPUT_MODE = False
 # local rank for DistributedDataParallel, given by command line argument
 _C.LOCAL_RANK = 0
 
+# -----------------------------------------------------------------------------
+# Distillation
+# -----------------------------------------------------------------------------
+_C.DISTILL = CN()
+_C.DISTILL.TEACHER = ''
+_C.DISTILL.DO_DISTILL = False
+_C.DISTILL.TEMPERATURE = 1.0
 
 def _update_config_from_file(config, cfg_file):
     config.defrost()
@@ -228,6 +235,14 @@ def update_config(config, args):
         config.EVAL_MODE = True
     if args.throughput:
         config.THROUGHPUT_MODE = True
+
+    ## Jinnian: Distillation
+    if args.teacher:
+        config.DISTILL.TEACHER = args.teacher
+    if args.do_distill:
+        config.DISTILL.DO_DISTILL = True
+    if args.temperature:
+        config.DISTILL.TEMPERATURE = args.temperature
 
     # set local rank for distributed training
     config.LOCAL_RANK = args.local_rank
