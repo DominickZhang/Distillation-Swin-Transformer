@@ -69,10 +69,11 @@ def parse_option():
 
     # Jinnian: add distillation parameters
     parser.add_argument('--do_distill', action='store_true', help='start distillation')
-    parser.add_argument('--teacher', default='', type=str, metavar='PATH',
-                        help='the path for teacher model')
+    parser.add_argument('--teacher', default='', type=str, metavar='PATH', help='the path for teacher model')
     parser.add_argument('--temperature', default=1.0, type=float,
                         help='the temperature for distillation loss')
+    parser.add_argument('--train_intermediate', action='store_true', help='whether to train with intermediate loss')
+    parser.add_argument('--intermediate_checkpoint', default='', type=str, help='the path to the checkpoint trained by intermediate loss')
 
     args, unparsed = parser.parse_known_args()
 
@@ -237,7 +238,7 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
 
 
 @torch.no_grad()
-def validate(config, data_loader, model, logger):
+def validate(config, data_loader, model, logger, is_distill=False):
     criterion = torch.nn.CrossEntropyLoss()
     model.eval()
 
@@ -252,7 +253,10 @@ def validate(config, data_loader, model, logger):
         target = target.cuda(non_blocking=True)
 
         # compute output
-        output = model(images)
+        if is_distill:
+            output, _, _ = model(images)
+        else:
+            output = model(images)
 
         # measure accuracy and record loss
         loss = criterion(output, target)

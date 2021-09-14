@@ -46,12 +46,13 @@ def load_checkpoint(config, model, optimizer, lr_scheduler, logger):
 def save_checkpoint(config, epoch, model, max_accuracy, optimizer, lr_scheduler, logger):
     save_state = {'model': model.state_dict(),
                   'optimizer': optimizer.state_dict(),
-                  'lr_scheduler': lr_scheduler.state_dict(),
                   'max_accuracy': max_accuracy,
                   'epoch': epoch,
                   'config': config}
     if config.AMP_OPT_LEVEL != "O0":
         save_state['amp'] = amp.state_dict()
+    if lr_scheduler is not None:
+        save_state['lr_scheduler'] = lr_scheduler.state_dict(),
 
     save_path = os.path.join(config.OUTPUT, f'ckpt_epoch_{epoch}.pth')
     logger.info(f"{save_path} saving......")
