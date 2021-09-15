@@ -8,5 +8,6 @@ MODEL:
     NUM_HEADS: [ 3, 6, 12, 24 ]
     WINDOW_SIZE: 7
 TRAIN:
-  BASE_LR: 1e-3
+  BASE_LR: 6.7e-4 # 1e-3*(2/3)
   CLIP_GRAD: 5.0
+  EPOCHS: 200

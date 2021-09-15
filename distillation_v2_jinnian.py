@@ -122,7 +122,7 @@ def main(config):
             logger.info(f'no checkpoint found in {config.OUTPUT}, ignoring auto resume')
 
     if config.MODEL.RESUME:
-        max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
+        max_accuracy = load_checkpoint(config, model_without_ddp, None, None, logger)
         acc1, acc5, loss = validate(config, data_loader_val, model, logger)
         logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
         if config.EVAL_MODE:
@@ -185,7 +185,7 @@ def load_teacher_model():
 def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
     layer_stage = epoch // 25 ## 25 epochs for each stage
-    #layer_stage = 4
+    #layer_stage = 3
     if epoch%25 == 0:
         logger.info("Training stage: %d..."%layer_stage)
     lr_stage_decay_weight = 1e-2
@@ -421,6 +421,7 @@ if __name__ == '__main__':
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --train_intermediate
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 196 --tag test --train_intermediate
+    # python3 -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --intermediate_checkpoint trained_models/swin_tiny_intermediate.pth
 
     _, config = parse_option()
 
