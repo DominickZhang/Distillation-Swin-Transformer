@@ -284,7 +284,7 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             #print(model.module)
             #print(model.module.features[0].weight)
             for parameter in list(model.named_parameters()):
-                print(torch.mean(parameter))
+                print(torch.mean(parameter[-1]))
             #print(list(model.named_parameters())[28])
             #print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
