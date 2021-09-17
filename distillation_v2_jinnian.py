@@ -278,11 +278,13 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
         optimizer.step()
 
         if dist.get_rank() == 0:
-            print(optimizer.param_groups[0]['params'])
+            #print(optimizer.param_groups[0]['params'])
             #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params']))
             #print(optimizer, optimizer.param_groups[0])
             #print(model.module)
             #print(model.module.features[0].weight)
+            for parameter in list(model.named_parameters()):
+                print(torch.mean(parameter))
             #print(list(model.named_parameters())[28])
             #print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
