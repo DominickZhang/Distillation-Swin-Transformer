@@ -7,6 +7,6 @@ MODEL:
     DEPTHS: [ 2, 2, 6, 2 ]
     NUM_HEADS: [ 3, 6, 12, 24 ]
     WINDOW_SIZE: 7
-TRAIN:
+#TRAIN:
   #BASE_LR: 1e-3
-  CLIP_GRAD: 5.0
+  #CLIP_GRAD: 5.0
