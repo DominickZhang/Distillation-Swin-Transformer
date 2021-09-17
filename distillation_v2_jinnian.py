@@ -189,8 +189,8 @@ def load_teacher_model():
 
 def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
-    layer_stage = epoch // 25 ## 25 epochs for each stage
-    #layer_stage = 3
+    #layer_stage = epoch // 25 ## 25 epochs for each stage
+    layer_stage = 3
     if epoch%25 == 0:
         logger.info("Training stage: %d..."%layer_stage)
     lr_stage_decay_weight = 1e-2
@@ -249,32 +249,6 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
         with torch.no_grad():
             attn_outputs_teacher, hidden_outputs_teacher = model_teacher(samples, layer_stage)
 
-        '''
-        if layer_stage >= 0:
-            attn_loss_0, hidden_loss_0 = cal_intermediate_loss(attn_outputs[0], hidden_outputs[0], attn_outputs_teacher[0], hidden_outputs_teacher[0])
-            attn_loss = attn_loss_0
-            hidden_loss = hidden_loss_0
-        if layer_stage >= 1:
-            attn_loss_1, hidden_loss_1 = cal_intermediate_loss(attn_outputs[1], hidden_outputs[1], attn_outputs_teacher[1], hidden_outputs_teacher[1])
-            attn_loss = attn_loss_1 + lr_stage_decay_weight*attn_loss_0
-            hidden_loss = hidden_loss_1 + lr_stage_decay_weight*hidden_loss_0
-        if layer_stage >= 2:
-            attn_loss_2, hidden_loss_2 = cal_intermediate_loss(attn_outputs[2], hidden_outputs[2], attn_outputs_teacher[2], hidden_outputs_teacher[2])
-            attn_loss = attn_loss_2 + lr_stage_decay_weight*(attn_loss_1 + attn_loss_0)
-            hidden_loss = hidden_loss_2 + lr_stage_decay_weight*(hidden_loss_1 + hidden_loss_0)
-        if layer_stage >=3:
-            attn_loss_3, hidden_loss_3 = cal_intermediate_loss(attn_outputs[3], hidden_outputs[3], attn_outputs_teacher[3], hidden_outputs_teacher[3])
-            attn_loss = attn_loss_3 + lr_stage_decay_weight*(attn_loss_2 + attn_loss_1 + attn_loss_0)
-            hidden_loss = hidden_loss_3 + lr_stage_decay_weight*(hidden_loss_2 + hidden_loss_1 + hidden_loss_0)
-        #print(attn_loss_0, attn_loss_1, attn_loss_2, attn_loss_3)
-        #print(hidden_loss_0, hidden_loss_1, hidden_loss_2, hidden_loss_3)
-        #loss = criterion(outputs, targets)
-        '''
-        '''
-        loss_pred = criterion(outputs/config.DISTILL.TEMPERATURE,
-                        outputs_teacher/config.DISTILL.TEMPERATURE)
-        loss += pred_loss_weight*loss_pred
-        '''
         attn_loss, hidden_loss = cal_intermediate_loss(attn_outputs, hidden_outputs, attn_outputs_teacher, hidden_outputs_teacher)
         loss = attn_loss + hidden_loss_weight[layer_stage]*hidden_loss
 
@@ -293,6 +267,11 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             else:
                 grad_norm = get_grad_norm(model.parameters())
         optimizer.step()
+
+        if dist.get_rank() == 0:
+            print(optimizer)
+        input('paused!')
+
         if lr_scheduler is not None:
             lr_scheduler.step_update(epoch * num_steps + idx)
 
@@ -429,7 +408,7 @@ if __name__ == '__main__':
     ## train:
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --train_intermediate
-    # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 196 --tag test --train_intermediate
+    # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test --train_intermediate
     # python3 -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --intermediate_checkpoint trained_models/swin_tiny_intermediate.pth
 
     _, config = parse_option()
