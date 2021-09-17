@@ -9,5 +9,6 @@ MODEL:
     WINDOW_SIZE: 7
 TRAIN:
   EPOCHS: 100
-  BASE_LR: 5e-5 #1e-4
+  #BASE_LR: 5e-5 #1e-4
+  BASE_LR: 1e-2
   CLIP_GRAD: 5.0
