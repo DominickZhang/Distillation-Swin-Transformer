@@ -193,7 +193,6 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
     layer_stage = 1
     if epoch%25 == 0:
         logger.info("Training stage: %d..."%layer_stage)
-    lr_stage_decay_weight = 1e-2
     hidden_loss_weight = [10, 10, 10, 1.0]
     #pred_loss_weight = 1e-10 # different from DataParallel, DistributedDataParallel will throw an error of unused parameters or unused outputs of model in the loss. Therefore, here we still calculate the prediction with a small weight to temporarily avoid this error
 
@@ -271,20 +270,21 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params'])) #189
             print(optimizer)
             #print(len(list(model.named_parameters()))) #189
-            print(list(model.named_parameters())[28])
-            print(list(model.named_parameters())[-8:])
+            #print(list(model.named_parameters())[28])
+            #print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
             #print(model.module.features[0].grad)
         
         optimizer.step()
 
         if dist.get_rank() == 0:
+            print(optimizer.param_groups[0]['params'])
             #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params']))
             #print(optimizer, optimizer.param_groups[0])
             #print(model.module)
             #print(model.module.features[0].weight)
-            print(list(model.named_parameters())[28])
-            print(list(model.named_parameters())[-8:])
+            #print(list(model.named_parameters())[28])
+            #print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
             print(model.module.features[0].grad)
         input('paused!')
