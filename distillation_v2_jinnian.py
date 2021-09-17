@@ -271,7 +271,8 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params'])) #189
             print(optimizer)
             #print(len(list(model.named_parameters()))) #189
-            print(list(model.named_parameters())[-8:-4])
+            print(list(model.named_parameters())[28])
+            print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
             #print(model.module.features[0].grad)
         
@@ -282,7 +283,8 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             #print(optimizer, optimizer.param_groups[0])
             #print(model.module)
             #print(model.module.features[0].weight)
-            print(list(model.named_parameters())[-8:-4])
+            print(list(model.named_parameters())[28])
+            print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
             print(model.module.features[0].grad)
         input('paused!')
