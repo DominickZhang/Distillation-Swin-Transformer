@@ -238,7 +238,7 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
 
 
 @torch.no_grad()
-def validate(config, data_loader, model, logger, is_distill=False):
+def validate(config, data_loader, model, logger, is_intermediate=False, model_teacher=None):
     criterion = torch.nn.CrossEntropyLoss()
     model.eval()
 
@@ -247,44 +247,90 @@ def validate(config, data_loader, model, logger, is_distill=False):
     acc1_meter = AverageMeter()
     acc5_meter = AverageMeter()
 
+    loss_attn_list = [AverageMeter() for _ in range(4)]
+    loss_hidden_list = [AverageMeter() for _ in range(4)]
+
     end = time.time()
     for idx, (images, target) in enumerate(data_loader):
         images = images.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
 
         # compute output
-        if is_distill:
-            output, _, _ = model(images)
+        if is_intermediate:
+            model_teacher.eval()
+
+            for layer_stage in range(4):
+                student_attn_list, student_hidden_list = model(images, layer_stage)
+                teacher_attn_list, teacher_hidden_list = model_teacher(images, layer_stage)
+
+                N = len(student_attn_list)
+                ## Attention loss
+                attn_loss = 0.
+                for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
+                    tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
+                    attn_loss += tmp_loss
+                ## Hidden loss
+                hidden_loss = 0.
+                for student_hidden, teacher_hidden in zip(student_hidden_list, teacher_hidden_list):
+                    tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
+                    hidden_loss += tmp_loss
+                attn_loss, hidden_loss = attn_loss/N, hidden_loss/N
+
+                loss_attn_list[layer_stage].update(attn_loss.item(), target.size(0))
+                loss_hidden_list[layer_stage].update(hidden_loss.item(), target.size(0))
+            
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+            if idx % config.PRINT_FREQ == 0:
+                memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+                logger.info(
+                    f'Test: [{idx}/{len(data_loader)}]\t'
+                    f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                    f'Attention_Loss_0 {loss_attn_list[0].val:.4f} ({loss_attn_list[0].avg:.4f})\t'
+                    f'Attention_Loss_1 {loss_attn_list[1].val:.4f} ({loss_attn_list[1].avg:.4f})\t'
+                    f'Attention_Loss_2 {loss_attn_list[2].val:.4f} ({loss_attn_list[2].avg:.4f})\t'
+                    f'Attention_Loss_3 {loss_attn_list[3].val:.4f} ({loss_attn_list[3].avg:.4f})\t'
+                    f'Hidden_Loss_0 {loss_hidden_list[0].val:.4f} ({loss_hidden_list[0].avg:.4f})\t'
+                    f'Hidden_Loss_1 {loss_hidden_list[1].val:.4f} ({loss_hidden_list[1].avg:.4f})\t'
+                    f'Hidden_Loss_2 {loss_hidden_list[2].val:.4f} ({loss_hidden_list[2].avg:.4f})\t'
+                    f'Hidden_Loss_3 {loss_hidden_list[3].val:.4f} ({loss_hidden_list[3].avg:.4f})\t'
+                    f'Mem {memory_used:.0f}MB')
         else:
             output = model(images)
 
-        # measure accuracy and record loss
-        loss = criterion(output, target)
-        acc1, acc5 = accuracy(output, target, topk=(1, 5))
+            # measure accuracy and record loss
+            loss = criterion(output, target)
+            acc1, acc5 = accuracy(output, target, topk=(1, 5))
 
-        acc1 = reduce_tensor(acc1)
-        acc5 = reduce_tensor(acc5)
-        loss = reduce_tensor(loss)
+            acc1 = reduce_tensor(acc1)
+            acc5 = reduce_tensor(acc5)
+            loss = reduce_tensor(loss)
 
-        loss_meter.update(loss.item(), target.size(0))
-        acc1_meter.update(acc1.item(), target.size(0))
-        acc5_meter.update(acc5.item(), target.size(0))
+            loss_meter.update(loss.item(), target.size(0))
+            acc1_meter.update(acc1.item(), target.size(0))
+            acc5_meter.update(acc5.item(), target.size(0))
 
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
 
-        if idx % config.PRINT_FREQ == 0:
-            memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
-            logger.info(
-                f'Test: [{idx}/{len(data_loader)}]\t'
-                f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
-                f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
-                f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
-                f'Mem {memory_used:.0f}MB')
-    logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
-    return acc1_meter.avg, acc5_meter.avg, loss_meter.avg
+            if idx % config.PRINT_FREQ == 0:
+                memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+                logger.info(
+                    f'Test: [{idx}/{len(data_loader)}]\t'
+                    f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                    f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                    f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
+                    f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
+                    f'Mem {memory_used:.0f}MB')
+    if is_intermediate:
+        logger.info(f' * Attention_Loss_0 {loss_attn_list[0].avg:.3f} Attention_Loss_1 {loss_attn_list[1].avg:.3f} Attention_Loss_2 {loss_attn_list[2].avg:.3f} Attention_Loss_3 {loss_attn_list[3].avg:.3f} Hidden_Loss_0 {loss_hidden_list[0].avg:.3f} Hidden_Loss_1 {loss_hidden_list[1].avg:.3f} Hidden_Loss_2 {loss_hidden_list[2].avg:.3f} Hidden_Loss_3 {loss_hidden_list[3].avg:.3f}')
+        return
+    else:
+        logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
+        return acc1_meter.avg, acc5_meter.avg, loss_meter.avg
 
 
 @torch.no_grad()
