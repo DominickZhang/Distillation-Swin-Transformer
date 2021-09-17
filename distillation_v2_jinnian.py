@@ -266,10 +266,17 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
                 grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
             else:
                 grad_norm = get_grad_norm(model.parameters())
+
+        if dist.get_rank() == 0:
+            print(optimizer, optimizer.params)
+            print(model.module)
+            print(model.module.features[0].weight)
+            print(model.module.features[0].grad)
+        
         optimizer.step()
 
         if dist.get_rank() == 0:
-            print(optimizer, optimizer[0])
+            print(optimizer, optimizer.params)
             print(model.module)
             print(model.module.features[0].weight)
             print(model.module.features[0].grad)
@@ -411,7 +418,7 @@ if __name__ == '__main__':
     ## train:
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --train_intermediate
-    # python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet  --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test --train_intermediate
+    # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet  --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test --train_intermediate
     # python3 -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --intermediate_checkpoint trained_models/swin_tiny_intermediate.pth
 
     _, config = parse_option()
