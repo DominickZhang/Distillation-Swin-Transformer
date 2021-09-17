@@ -190,7 +190,7 @@ def load_teacher_model():
 def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
     #layer_stage = epoch // 25 ## 25 epochs for each stage
-    layer_stage = 0
+    layer_stage = 1
     if epoch%25 == 0:
         logger.info("Training stage: %d..."%layer_stage)
     lr_stage_decay_weight = 1e-2
