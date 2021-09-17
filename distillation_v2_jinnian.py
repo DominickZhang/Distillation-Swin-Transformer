@@ -95,7 +95,8 @@ def main(config):
             logger.info(msg)
             torch.cuda.empty_cache()
             if config.EVAL_MODE:
-                validate(config, data_loader_val, model, logger, is_intermediate=True, model_teacher=model_teacher)
+                #validate(config, data_loader_val, model, logger, is_intermediate=True, model_teacher=model_teacher)
+                validate(config, data_loader_train, model, logger, is_intermediate=True, model_teacher=model_teacher)
                 return
         lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
 
@@ -423,7 +424,7 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
 
 if __name__ == '__main__':
     ## eval:
-    # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --eval --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 192 --tag dist_intermediate_eval --intermediate_checkpoint ~/trained_models/swin_tiny_intermediate.pth
+    # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --eval --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 192 --tag dist_intermediate_eval --intermediate_checkpoint ~/trained_models/swin_tiny_intermediate.pth
 
     ## train:
     # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_v2.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2
