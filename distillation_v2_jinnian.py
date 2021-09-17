@@ -271,7 +271,7 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             print(optimizer, len(optimizer.param_groups[0]['params']))
             #print(model.module)
             #print(model._parameters.keys())
-            print(type(model.parameters))
+            print(list(model.named_parameters()), len(list(model.named_parameters())))
             #print(model.module.parameters)
             print(model.module.features[0].grad)
         
