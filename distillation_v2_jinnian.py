@@ -268,7 +268,7 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
                 grad_norm = get_grad_norm(model.parameters())
 
         if dist.get_rank() == 0:
-            print(optimizer.param_groups[0]['params'])
+            print(len(optimizer.param_groups[0]['params']))
             #print(len(list(model.named_parameters()))) #189
             print(list(model.named_parameters())[:3])
             print(model.module.features[0].grad)
