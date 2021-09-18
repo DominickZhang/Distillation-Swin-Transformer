@@ -75,6 +75,7 @@ def parse_option():
     parser.add_argument('--train_intermediate', action='store_true', help='whether to train with intermediate loss')
     parser.add_argument('--intermediate_checkpoint', default='', type=str, help='the path to the checkpoint trained by intermediate loss')
     parser.add_argument('--stage', default=0, type=int, help='the index of stage in Swin Transformer to be trained')
+    parser.add_argument('--alpha', default=1.0, type=float, help='the weight to balance the soft label loss and ground-truth label loss')
 
     args, unparsed = parser.parse_known_args()
 

@@ -192,9 +192,11 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
             outputs_teacher = model_teacher(samples)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
-            #loss = criterion(outputs, targets)
-            loss = criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = criterion(outputs, targets)
+            loss_soft = criterion(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
+            loss = config.DISTILL.ALPHA*loss_truth + (1.0 - config.DISTILL.ALPHA)*loss_soft
+
             loss = loss / config.TRAIN.ACCUMULATION_STEPS
             if config.AMP_OPT_LEVEL != "O0":
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
@@ -214,9 +216,11 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 optimizer.zero_grad()
                 lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            #loss = criterion(outputs, targets)
-            loss = criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = criterion(outputs, targets)
+            loss_soft = criterion(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
+            loss = config.DISTILL.ALPHA*loss_truth + (1.0 - config.DISTILL.ALPHA)*loss_soft
+
             optimizer.zero_grad()
             if config.AMP_OPT_LEVEL != "O0":
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
@@ -254,8 +258,6 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
-
-
 
 
 

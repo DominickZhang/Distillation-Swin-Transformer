@@ -263,35 +263,8 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
                 grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
             else:
                 grad_norm = get_grad_norm(model.parameters())
-
-        '''
-        if dist.get_rank() == 0:
-            #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params'])) #189
-            print(optimizer)
-            #print(len(list(model.named_parameters()))) #189
-            #print(list(model.named_parameters())[28])
-            #print(list(model.named_parameters())[-8:])
-            #print(model.fit_dense_C)
-            #print(model.module.features[0].grad)
-        '''
         
         optimizer.step()
-
-        '''
-        if dist.get_rank() == 0:
-            #print(optimizer.param_groups[0]['params'])
-            #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params']))
-            #print(optimizer, optimizer.param_groups[0])
-            #print(model.module)
-            #print(model.module.features[0].weight)
-            for parameter in list(model.named_parameters()):
-                print(parameter[0], torch.mean(parameter[-1]))
-            #print(list(model.named_parameters())[28])
-            #print(list(model.named_parameters())[-8:])
-            #print(model.fit_dense_C)
-            print(model.module.features[0].grad)
-        input('paused!')
-        '''
 
         if lr_scheduler is not None:
             lr_scheduler.step_update(epoch * num_steps + idx)
@@ -332,7 +305,8 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
     batch_time = AverageMeter()
     loss_meter = AverageMeter()
     norm_meter = AverageMeter()
-    pred_loss_meter = AverageMeter()
+    loss_soft_meter = AverageMeter()
+    loss_truth_meter = AverageMeter()
 
     start = time.time()
     end = time.time()
@@ -349,11 +323,12 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
             outputs_teacher = model_teacher(samples)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
-            #loss = criterion(outputs, targets)
-            loss_pred = criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = criterion(outputs, targets)
+            loss_soft = criterion(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
+            loss = config.DISTILL.ALPHA*loss_truth + (1.0 - config.DISTILL.ALPHA)*loss_soft
 
-            loss = loss_pred / config.TRAIN.ACCUMULATION_STEPS
+            loss = loss / config.TRAIN.ACCUMULATION_STEPS
             if config.AMP_OPT_LEVEL != "O0":
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
@@ -372,11 +347,10 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 optimizer.zero_grad()
                 lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            #loss = criterion(outputs, targets)
-            loss_pred = criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = criterion(outputs, targets)
+            loss_soft = criterion(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
-            
-            loss = loss_pred
+            loss = config.DISTILL.ALPHA*loss_truth + (1.0 - config.DISTILL.ALPHA)*loss_soft
 
             optimizer.zero_grad()
             if config.AMP_OPT_LEVEL != "O0":
@@ -398,7 +372,8 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
         torch.cuda.synchronize()
 
         loss_meter.update(loss.item(), targets.size(0))
-        pred_loss_meter.update(loss_pred.item(), targets.size(0))
+        loss_soft_meter.update(loss_soft.item(), targets.size(0))
+        loss_truth_meter.update(loss_truth.item(), targets.size(0))
         norm_meter.update(grad_norm)
         batch_time.update(time.time() - end)
         end = time.time()
@@ -412,7 +387,8 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
                 f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
                 f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
-                f'pred_loss {pred_loss_meter.val:.4f} ({pred_loss_meter.avg:.4f})\t'
+                f'loss_soft {loss_soft_meter.val:.4f} ({loss_soft_meter.avg:.4f})\t'
+                f'loss_truth {loss_soft_meter.val:.4f} ({loss_soft_meter.avg:.4f})\t'
                 f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
@@ -428,6 +404,7 @@ if __name__ == '__main__':
 
     ## train:
     # python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_org --output /mnt/configblob/users/v-jinnian/swin_distill
+    # python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill.yaml --data-path /sdb/imagenet --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_alpha --output /mnt/configblob/users/v-jinnian/swin_distill
 
     # python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_bash --train_intermediate --stage $i
     # CUDA_VISIBLE_DEVICES=4,5,6,7 python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet  --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test --train_intermediate
