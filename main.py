@@ -74,6 +74,7 @@ def parse_option():
                         help='the temperature for distillation loss')
     parser.add_argument('--train_intermediate', action='store_true', help='whether to train with intermediate loss')
     parser.add_argument('--intermediate_checkpoint', default='', type=str, help='the path to the checkpoint trained by intermediate loss')
+    parser.add_argument('--stage', default=0, type=int, help='the index of stage in Swin Transformer to be trained')
 
     args, unparsed = parser.parse_known_args()
 

@@ -90,7 +90,6 @@ def main(config):
             logger.info(msg)
             torch.cuda.empty_cache()
             if config.EVAL_MODE:
-                #validate(config, data_loader_val, model, logger, is_intermediate=True, model_teacher=model_teacher)
                 validate(config, data_loader_train, model, logger, is_intermediate=True, model_teacher=model_teacher)
                 return
         lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
@@ -121,10 +120,12 @@ def main(config):
             logger.info(f'no checkpoint found in {config.OUTPUT}, ignoring auto resume')
 
     if config.MODEL.RESUME:
-        #max_accuracy = load_checkpoint(config, model_without_ddp, None, None, logger)
-        max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
-        acc1, acc5, loss = validate(config, data_loader_val, model, logger)
-        logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
+        if config.DISTILL.TRAIN_INTERMEDIATE:
+            max_accuracy = load_checkpoint(config, model_without_ddp, None, None, logger)
+        else:
+            max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
+            acc1, acc5, loss = validate(config, data_loader_val, model, logger)
+            logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
         if config.EVAL_MODE:
             return
 
@@ -137,7 +138,7 @@ def main(config):
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         data_loader_train.sampler.set_epoch(epoch)
         if config.DISTILL.TRAIN_INTERMEDIATE:
-            train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader_train, optimizer, epoch, mixup_fn)
+            train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader_train, optimizer, epoch, mixup_fn, config.DISTILL.STAGE)
             if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
                 save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
         else:
@@ -182,11 +183,11 @@ def load_teacher_model():
                                 )
     return model
 
-def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
+def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, layer_stage, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
     #layer_stage = epoch // 25 ## 25 epochs for each stage
-    layer_stage = epoch // 5
-    if epoch%4 == 0:
+    #layer_stage = epoch // 5
+    if epoch == 0:
         logger.info("Training stage: %d..."%layer_stage)
     hidden_loss_weight = [10, 10, 10, 1.0]
     #pred_loss_weight = 1e-10 # different from DataParallel, DistributedDataParallel will throw an error of unused parameters or unused outputs of model in the loss. Therefore, here we still calculate the prediction with a small weight to temporarily avoid this error
@@ -428,8 +429,9 @@ if __name__ == '__main__':
     ## train:
     # python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_org --output /mnt/configblob/users/v-jinnian/swin_distill
 
-    # python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --train_intermediate
+    # python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_bash --train_intermediate --stage $i
     # CUDA_VISIBLE_DEVICES=4,5,6,7 python -m torch.distributed.launch --nproc_per_node 4 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /sdb/imagenet  --teacher ~/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test --train_intermediate
+
     # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  distillation_v2_jinnian.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag dist_v2 --intermediate_checkpoint trained_models/swin_tiny_intermediate.pth
 
     _, config = parse_option()
