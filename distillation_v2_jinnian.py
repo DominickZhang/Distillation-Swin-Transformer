@@ -190,7 +190,7 @@ def load_teacher_model():
 def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
     #layer_stage = epoch // 25 ## 25 epochs for each stage
-    layer_stage = 3
+    layer_stage = 1
     if epoch%25 == 0:
         logger.info("Training stage: %d..."%layer_stage)
     hidden_loss_weight = [10, 10, 10, 1.0]
@@ -237,6 +237,8 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
         return attn_loss/N, hidden_loss/N
 
     for idx, (samples, targets) in enumerate(data_loader):
+        if idx > 10:
+            break
         samples = samples.cuda(non_blocking=True)
         targets = targets.cuda(non_blocking=True)
 
@@ -266,6 +268,7 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             else:
                 grad_norm = get_grad_norm(model.parameters())
 
+        '''
         if dist.get_rank() == 0:
             #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params'])) #189
             print(optimizer)
@@ -274,9 +277,11 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             #print(list(model.named_parameters())[-8:])
             #print(model.fit_dense_C)
             #print(model.module.features[0].grad)
+        '''
         
         optimizer.step()
 
+        '''
         if dist.get_rank() == 0:
             #print(optimizer.param_groups[0]['params'])
             #print(len(optimizer.param_groups[0]['params'])+len(optimizer.param_groups[1]['params']))
@@ -290,6 +295,7 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
             #print(model.fit_dense_C)
             print(model.module.features[0].grad)
         input('paused!')
+        '''
 
         if lr_scheduler is not None:
             lr_scheduler.step_update(epoch * num_steps + idx)
