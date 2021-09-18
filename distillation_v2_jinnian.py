@@ -323,10 +323,10 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
             outputs_teacher = model_teacher(samples)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
-            loss_truth = criterion(outputs, targets)
-            loss_soft = criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = config.DISTILL.ALPHA*criterion(outputs, targets)
+            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
-            loss = config.DISTILL.ALPHA*loss_truth + (1.0 - config.DISTILL.ALPHA)*loss_soft
+            loss = loss_truth + loss_soft
 
             loss = loss / config.TRAIN.ACCUMULATION_STEPS
             if config.AMP_OPT_LEVEL != "O0":
@@ -347,10 +347,10 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 optimizer.zero_grad()
                 lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            loss_truth = criterion(outputs, targets)
-            loss_soft = criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = config.DISTILL.ALPHA*criterion(outputs, targets)
+            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
-            loss = config.DISTILL.ALPHA*loss_truth + (1.0 - config.DISTILL.ALPHA)*loss_soft
+            loss = loss_truth + loss_soft
 
             optimizer.zero_grad()
             if config.AMP_OPT_LEVEL != "O0":
