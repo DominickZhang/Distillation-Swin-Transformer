@@ -191,6 +191,7 @@ _C.DISTILL.TRAIN_INTERMEDIATE = False
 _C.DISTILL.INTERMEDIATE_CHECKPOINT = ''
 _C.DISTILL.STAGE = 0
 _C.DISTILL.ALPHA = 1.0
+_C.DISTILL.ACCUMULATE_STEPS = 0
 
 def _update_config_from_file(config, cfg_file):
     config.defrost()
@@ -254,6 +255,7 @@ def update_config(config, args):
     if args.stage:
         config.DISTILL.STAGE = args.stage
     config.DISTILL.ALPHA = args.alpha
+    config.DISTILL.ACCUMULATE_STEPS = args.accumulate_steps
 
     # set local rank for distributed training
     config.LOCAL_RANK = args.local_rank
