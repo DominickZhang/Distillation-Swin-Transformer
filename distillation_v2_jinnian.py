@@ -54,11 +54,6 @@ def main(config):
     model_teacher = load_teacher_model()
     model_teacher.cuda()
 
-    '''
-    optimizer = build_optimizer(config, model_teacher)
-    if config.AMP_OPT_LEVEL != "O0":
-        model_teacher, optimizer = amp.initialize(model_teacher, optimizer, opt_level=config.AMP_OPT_LEVEL)ll   
-    '''
     model_teacher = torch.nn.parallel.DistributedDataParallel(model_teacher, device_ids=[config.LOCAL_RANK], broadcast_buffers=False)
 
     logger.info(f"Creating model:{config.MODEL.TYPE}/{config.MODEL.NAME}")
