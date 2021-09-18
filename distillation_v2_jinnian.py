@@ -388,7 +388,7 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
                 f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
                 f'loss_soft {loss_soft_meter.val:.4f} ({loss_soft_meter.avg:.4f})\t'
-                f'loss_truth {loss_soft_meter.val:.4f} ({loss_soft_meter.avg:.4f})\t'
+                f'loss_truth {loss_truth_meter.val:.4f} ({loss_truth_meter.avg:.4f})\t'
                 f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
