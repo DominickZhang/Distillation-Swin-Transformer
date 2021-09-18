@@ -30,7 +30,10 @@ def load_checkpoint(config, model, optimizer, lr_scheduler, logger):
         if optimizer is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
         if lr_scheduler is not None:
-            lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+            try:
+                lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+            except:
+                lr_scheduler.load_state_dict(checkpoint['lr_scheduler'][0])
         config.defrost()
         config.TRAIN.START_EPOCH = checkpoint['epoch'] + 1
         config.freeze()
