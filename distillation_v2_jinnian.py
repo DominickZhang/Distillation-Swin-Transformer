@@ -94,16 +94,15 @@ def main(config):
                 return
         lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
 
-    '''
     if config.AUG.MIXUP > 0.:
         # smoothing is handled with mixup label transform
-        criterion = SoftTargetCrossEntropy()
+        criterion_truth = SoftTargetCrossEntropy()
     elif config.MODEL.LABEL_SMOOTHING > 0.:
-        criterion = LabelSmoothingCrossEntropy(smoothing=config.MODEL.LABEL_SMOOTHING)
+        criterion_truth = LabelSmoothingCrossEntropy(smoothing=config.MODEL.LABEL_SMOOTHING)
     else:
-        criterion = torch.nn.CrossEntropyLoss()
-    '''
-    criterion = soft_cross_entropy
+        criterion_truth = torch.nn.CrossEntropyLoss()
+    
+    criterion_soft = soft_cross_entropy
     
     max_accuracy = 0.0
 
@@ -138,11 +137,11 @@ def main(config):
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         data_loader_train.sampler.set_epoch(epoch)
         if config.DISTILL.TRAIN_INTERMEDIATE:
-            train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader_train, optimizer, epoch, mixup_fn, config.DISTILL.STAGE)
+            train_one_epoch_intermediate_distill(config, model, model_teacher, criterion_soft, data_loader_train, optimizer, epoch, mixup_fn, config.DISTILL.STAGE)
             if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
                 save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
         else:
-            train_one_epoch_distill(config, model, model_teacher, criterion, data_loader_train, optimizer, epoch, mixup_fn, lr_scheduler)
+            train_one_epoch_distill(config, model, model_teacher, data_loader_train, optimizer, epoch, mixup_fn, lr_scheduler, criterion_soft=criterion_soft, criterion_truth=criterion_truth)
             if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
                 save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
 
@@ -295,7 +294,7 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
 
 
-def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler):
+def train_one_epoch_distill(config, model, model_teacher, data_loader, optimizer, epoch, mixup_fn, lr_scheduler, criterion_soft=None, criterion_truth=None):
     model.train()
     optimizer.zero_grad()
 
@@ -323,8 +322,8 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
             outputs_teacher = model_teacher(samples)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
-            loss_truth = config.DISTILL.ALPHA*criterion(outputs, targets)
-            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = config.DISTILL.ALPHA*criterion_truth(outputs, targets)
+            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion_soft(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
             loss = loss_truth + loss_soft
 
@@ -347,8 +346,8 @@ def train_one_epoch_distill(config, model, model_teacher, criterion, data_loader
                 optimizer.zero_grad()
                 lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            loss_truth = config.DISTILL.ALPHA*criterion(outputs, targets)
-            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion(outputs/config.DISTILL.TEMPERATURE,
+            loss_truth = config.DISTILL.ALPHA*criterion_truth(outputs, targets)
+            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion_soft(outputs/config.DISTILL.TEMPERATURE,
                             outputs_teacher/config.DISTILL.TEMPERATURE)
             loss = loss_truth + loss_soft
 
