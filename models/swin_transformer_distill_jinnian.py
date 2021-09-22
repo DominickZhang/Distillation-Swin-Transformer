@@ -490,21 +490,24 @@ class SwinTransformerDistill(nn.Module):
                     x = x + self.absolute_pos_embed # self.absolute_pos_embed
                 x = self.pos_drop(x)
 
+            attn_list = []
+            hidden_list = []
             for index, layer in enumerate(self.layers):
                 if index < stage:
                     with torch.no_grad():
                         x, _, _ = layer(x)
                 else:
-                    _, attn, hidden = layer(x)
+                    x, attn, hidden = layer(x)
                     if self.is_student:
                         for i, hidden_ele in enumerate(hidden):
-                            hidden[i] = self.fit_dense_C[index](hidden_ele)
+                            hidden_list.append(self.fit_dense_C[index](hidden_ele))
                         for i, attn_ele in enumerate(attn):
                             B, H, W, W = attn_ele.shape
                             attn_ele = attn_ele.transpose(-1, -3).reshape(-1, H)
-                            attn[i] = self.fit_dense_M[index](attn_ele).reshape(B, W, W, -1).transpose(-1, -3)
-                    break
-            return [], attn, hidden
+                            attn_list.append(self.fit_dense_M[index](attn_ele).reshape(B, W, W, -1).transpose(-1, -3))
+                    if stage >= 0:
+                        break
+            return [], attn_list, hidden_list
 
     def forward(self, x, stage=None):
         x, attn_outputs, hidden_outputs = self.forward_features(x, stage)
