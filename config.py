@@ -243,8 +243,6 @@ def update_config(config, args):
         config.THROUGHPUT_MODE = True
 
     ## Jinnian: Distillation
-    config.TRAIN.ACCUMULATION_STEPS = args.accumulate_steps
-
     if args.teacher:
         config.DISTILL.TEACHER = args.teacher
     if args.do_distill:
