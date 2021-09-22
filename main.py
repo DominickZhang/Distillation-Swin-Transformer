@@ -275,8 +275,8 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
                 input('paused!')
             student_att = torch.where(student_att <= -1e2, torch.zeros_like(student_att).to(student_att.device), student_att)
             teacher_att = torch.where(teacher_att <= -1e2, torch.zeros_like(teacher_att).to(teacher_att.device), teacher_att)
-            #tmp_loss = torch.nn.MSELoss()(student_att, teacher_att)
-            tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
+            tmp_loss = torch.nn.MSELoss()(student_att, teacher_att)
+            #tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
             attn_loss += tmp_loss
         ## Hidden loss
         hidden_loss = 0.
@@ -286,8 +286,8 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
                 print(student_hidden[0,0,:], teacher_hidden[0,0,:])
                 #print(student_hidden.shape) #128*3136*192
                 input('paused!')
-            #tmp_loss = torch.nn.MSELoss()(student_hidden, teacher_hidden)
-            tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
+            tmp_loss = torch.nn.MSELoss()(student_hidden, teacher_hidden)
+            #tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
             hidden_loss += tmp_loss
         return attn_loss/N, hidden_loss/N
 
