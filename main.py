@@ -563,6 +563,8 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
 
     loss_attn_list = [AverageMeter() for _ in range(4)]
     loss_hidden_list = [AverageMeter() for _ in range(4)]
+    loss_attn_meter = AverageMeter()
+    loss_hidden_meter = AverageMeter()
 
     end = time.time()
     for idx, (images, target) in enumerate(data_loader):
@@ -572,13 +574,23 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
         # compute output
         if is_intermediate:
             model_teacher.eval()
-
+            loss_attn = 0.0
+            loss_hidden = 0.0
+            layer_num = [2, 2, 6, 2]
             for layer_stage in range(4):
                 student_attn_list, student_hidden_list = model(images, layer_stage)
                 teacher_attn_list, teacher_hidden_list = model_teacher(images, layer_stage)
                 attn_loss, hidden_loss = cal_intermediate_loss(student_attn_list, student_hidden_list, teacher_attn_list, teacher_hidden_list)
                 loss_attn_list[layer_stage].update(attn_loss.item(), target.size(0))
                 loss_hidden_list[layer_stage].update(hidden_loss.item(), target.size(0))
+                loss_attn += attn_loss*layer_num[layer_stage]
+                loss_hidden += hidden_loss*layer_num[layer_stage]
+            loss_attn /= sum(layer_num)
+            loss_hidden /= sum(layer_num)
+            loss = loss_attn + loss_hidden
+            loss_attn_meter.update(loss_attn.item(), target.size(0))
+            loss_hidden_meter.update(loss_hidden.item(), target.size(0))
+            loss_meter.update(loss.item(), target.size(0))
             
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -589,6 +601,9 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
                 logger.info(
                     f'Test: [{idx}/{len(data_loader)}]\t'
                     f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                    f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                    f'Attention Loss {loss_attn_meter.val:.4f} ({loss_attn_meter.avg:.4f})\t'
+                    f'Hidden Loss {loss_hidden_meter.val:.4f} ({loss_hidden_meter.avg:.4f})\t'
                     f'Attention_Loss_0 {loss_attn_list[0].val:.4f} ({loss_attn_list[0].avg:.4f})\t'
                     f'Attention_Loss_1 {loss_attn_list[1].val:.4f} ({loss_attn_list[1].avg:.4f})\t'
                     f'Attention_Loss_2 {loss_attn_list[2].val:.4f} ({loss_attn_list[2].avg:.4f})\t'
@@ -627,7 +642,7 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
                     f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
                     f'Mem {memory_used:.0f}MB')
     if is_intermediate:
-        logger.info(f' * Attention_Loss_0 {loss_attn_list[0].avg:.3f} Attention_Loss_1 {loss_attn_list[1].avg:.3f} Attention_Loss_2 {loss_attn_list[2].avg:.3f} Attention_Loss_3 {loss_attn_list[3].avg:.3f} Hidden_Loss_0 {loss_hidden_list[0].avg:.3f} Hidden_Loss_1 {loss_hidden_list[1].avg:.3f} Hidden_Loss_2 {loss_hidden_list[2].avg:.3f} Hidden_Loss_3 {loss_hidden_list[3].avg:.3f}')
+        logger.info(f' * Loss {loss_meter.avg:.3f}  Attention Loss {loss_attn_meter.avg:.3f}  Hidden Loss {loss_hidden_meter.avg:.3f}  Attention_Loss_0 {loss_attn_list[0].avg:.3f} Attention_Loss_1 {loss_attn_list[1].avg:.3f} Attention_Loss_2 {loss_attn_list[2].avg:.3f} Attention_Loss_3 {loss_attn_list[3].avg:.3f} Hidden_Loss_0 {loss_hidden_list[0].avg:.3f} Hidden_Loss_1 {loss_hidden_list[1].avg:.3f} Hidden_Loss_2 {loss_hidden_list[2].avg:.3f} Hidden_Loss_3 {loss_hidden_list[3].avg:.3f}')
         return
     else:
         logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
