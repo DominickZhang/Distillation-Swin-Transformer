@@ -505,6 +505,9 @@ class SwinTransformerDistill(nn.Module):
                             B, H, W, W = attn_ele.shape
                             attn_ele = attn_ele.transpose(-1, -3).reshape(-1, H)
                             attn_list.append(self.fit_dense_M[index](attn_ele).reshape(B, W, W, -1).transpose(-1, -3))
+                    else:
+                        attn_list.append(attn)
+                        hidden_list.append(hidden)
                     if stage >= 0:
                         break
             return [], attn_list, hidden_list
