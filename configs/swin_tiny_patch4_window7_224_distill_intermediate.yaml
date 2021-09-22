@@ -8,8 +8,7 @@ MODEL:
     NUM_HEADS: [ 3, 6, 12, 24 ]
     WINDOW_SIZE: 7
 TRAIN:
-  EPOCHS: 5
-  #BASE_LR: 5e-5 #1e-4
+  EPOCHS: 2
+  BASE_LR: 5e-5 #1e-4
   #WEIGHT_DECAY: 10000000.0
-  BASE_LR: 1e-3
-  CLIP_GRAD: 5.0
+  #BASE_LR: 1e-3

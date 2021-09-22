@@ -133,14 +133,6 @@ def main(config):
     if config.DISTILL.TRAIN_INTERMEDIATE:
         lr_scheduler = None
     else:
-        if len(config.DISTILL.INTERMEDIATE_CHECKPOINT):
-            checkpoint = torch.load(config.DISTILL.INTERMEDIATE_CHECKPOINT,  map_location='cpu')
-            msg = model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
-            logger.info(msg)
-            torch.cuda.empty_cache()
-            if config.EVAL_MODE:
-                validate(config, data_loader_train, model, logger, is_intermediate=True, model_teacher=model_teacher)
-                return
         lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
 
     if config.AUG.MIXUP > 0.:
@@ -170,6 +162,7 @@ def main(config):
     if config.MODEL.RESUME:
         if config.DISTILL.TRAIN_INTERMEDIATE:
             max_accuracy = load_checkpoint(config, model_without_ddp, None, None, logger)
+            validate(config, data_loader_val, model, logger, is_intermediate=True, model_teacher=model_teacher)
         else:
             max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
             acc1, acc5, loss = validate(config, data_loader_val, model, logger)
@@ -668,7 +661,7 @@ if __name__ == '__main__':
 
     #### distillation with intermediate loss
     # CUDA_VISIBLE_DEVICES=4,5,6,7 python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_all --train_intermediate --stage -1
-    # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234 main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_prog --intermediate_checkpoint trained_models/swin_tiny_intermediate.pth --train_intermediate --stage $i
+    # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234 main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill.yaml --data-path datasets/ --teacher trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_prog_$i --resume output/test_inter_prog/test_inter_prog_$i/ckpt_epoch_1.pth --train_intermediate --stage $i --output output/test_inter_prog 
     
 
     _, config = parse_option()
