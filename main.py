@@ -26,7 +26,6 @@ from optimizer import build_optimizer
 from logger import create_logger
 from utils import load_checkpoint, save_checkpoint, get_grad_norm, auto_resume_helper, reduce_tensor
 
-from main import parse_option, validate, throughput
 #from models.swin_transformer import SwinTransformer
 from models.swin_transformer_distill_jinnian import SwinTransformerDistill
 
@@ -35,6 +34,58 @@ try:
     from apex import amp
 except ImportError:
     amp = None
+
+
+def parse_option():
+    parser = argparse.ArgumentParser('Swin Transformer training and evaluation script', add_help=False)
+    parser.add_argument('--cfg', type=str, required=True, metavar="FILE", help='path to config file', )
+    parser.add_argument(
+        "--opts",
+        help="Modify config options by adding 'KEY VALUE' pairs. ",
+        default=None,
+        nargs='+',
+    )
+
+    # easy config modification
+    parser.add_argument('--batch-size', type=int, help="batch size for single GPU")
+    parser.add_argument('--data-path', type=str, help='path to dataset')
+    parser.add_argument('--zip', action='store_true', help='use zipped dataset instead of folder dataset')
+    parser.add_argument('--cache-mode', type=str, default='part', choices=['no', 'full', 'part'],
+                        help='no: no cache, '
+                             'full: cache all data, '
+                             'part: sharding the dataset into nonoverlapping pieces and only cache one piece')
+    parser.add_argument('--resume', help='resume from checkpoint')
+    parser.add_argument('--accumulation-steps', type=int, help="gradient accumulation steps")
+    parser.add_argument('--use-checkpoint', action='store_true',
+                        help="whether to use gradient checkpointing to save memory")
+    parser.add_argument('--amp-opt-level', type=str, default='O1', choices=['O0', 'O1', 'O2'],
+                        help='mixed precision opt level, if O0, no amp is used')
+    parser.add_argument('--output', default='output', type=str, metavar='PATH',
+                        help='root of output folder, the full path is <output>/<model_name>/<tag> (default: output)')
+    parser.add_argument('--tag', help='tag of experiment')
+    parser.add_argument('--eval', action='store_true', help='Perform evaluation only')
+    parser.add_argument('--throughput', action='store_true', help='Test throughput only')
+
+    # distributed training
+    parser.add_argument("--local_rank", type=int, required=True, help='local rank for DistributedDataParallel')
+
+    # Jinnian: add distillation parameters
+    parser.add_argument('--do_distill', action='store_true', help='start distillation')
+    parser.add_argument('--teacher', default='', type=str, metavar='PATH', help='the path for teacher model')
+    parser.add_argument('--temperature', default=1.0, type=float,
+                        help='the temperature for distillation loss')
+    parser.add_argument('--train_intermediate', action='store_true', help='whether to train with intermediate loss')
+    parser.add_argument('--intermediate_checkpoint', default='', type=str, help='the path to the checkpoint trained by intermediate loss')
+    parser.add_argument('--stage', default=0, type=int, help='the index of stage in Swin Transformer to be trained')
+    parser.add_argument('--alpha', default=0.0, type=float, help='the weight to balance the soft label loss and ground-truth label loss')
+    parser.add_argument('--accumulate_steps', default=0, type=int, help='Whether to use gradient accumulation')
+    parser.add_argument('--load_tar', action='store_true', help='whether to load data from tar files')
+
+    args, unparsed = parser.parse_known_args()
+
+    config = get_config(args)
+
+    return args, config
 
 def soft_cross_entropy(predicts, targets):
             student_likelihood = torch.nn.functional.log_softmax(predicts, dim=-1)
@@ -484,6 +535,121 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
 
 
+
+@torch.no_grad()
+def validate(config, data_loader, model, logger, is_intermediate=False, model_teacher=None):
+    criterion = torch.nn.CrossEntropyLoss()
+    model.eval()
+
+    batch_time = AverageMeter()
+    loss_meter = AverageMeter()
+    acc1_meter = AverageMeter()
+    acc5_meter = AverageMeter()
+
+    loss_attn_list = [AverageMeter() for _ in range(4)]
+    loss_hidden_list = [AverageMeter() for _ in range(4)]
+
+    end = time.time()
+    for idx, (images, target) in enumerate(data_loader):
+        images = images.cuda(non_blocking=True)
+        target = target.cuda(non_blocking=True)
+
+        # compute output
+        if is_intermediate:
+            model_teacher.eval()
+
+            for layer_stage in range(4):
+                student_attn_list, student_hidden_list = model(images, layer_stage)
+                teacher_attn_list, teacher_hidden_list = model_teacher(images, layer_stage)
+
+                N = len(student_attn_list)
+                ## Attention loss
+                attn_loss = 0.
+                for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
+                    tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
+                    attn_loss += tmp_loss
+                ## Hidden loss
+                hidden_loss = 0.
+                for student_hidden, teacher_hidden in zip(student_hidden_list, teacher_hidden_list):
+                    tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
+                    hidden_loss += tmp_loss
+                attn_loss, hidden_loss = attn_loss/N, hidden_loss/N
+
+                loss_attn_list[layer_stage].update(attn_loss.item(), target.size(0))
+                loss_hidden_list[layer_stage].update(hidden_loss.item(), target.size(0))
+            
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+            if idx % config.PRINT_FREQ == 0:
+                memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+                logger.info(
+                    f'Test: [{idx}/{len(data_loader)}]\t'
+                    f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                    f'Attention_Loss_0 {loss_attn_list[0].val:.4f} ({loss_attn_list[0].avg:.4f})\t'
+                    f'Attention_Loss_1 {loss_attn_list[1].val:.4f} ({loss_attn_list[1].avg:.4f})\t'
+                    f'Attention_Loss_2 {loss_attn_list[2].val:.4f} ({loss_attn_list[2].avg:.4f})\t'
+                    f'Attention_Loss_3 {loss_attn_list[3].val:.4f} ({loss_attn_list[3].avg:.4f})\t'
+                    f'Hidden_Loss_0 {loss_hidden_list[0].val:.4f} ({loss_hidden_list[0].avg:.4f})\t'
+                    f'Hidden_Loss_1 {loss_hidden_list[1].val:.4f} ({loss_hidden_list[1].avg:.4f})\t'
+                    f'Hidden_Loss_2 {loss_hidden_list[2].val:.4f} ({loss_hidden_list[2].avg:.4f})\t'
+                    f'Hidden_Loss_3 {loss_hidden_list[3].val:.4f} ({loss_hidden_list[3].avg:.4f})\t'
+                    f'Mem {memory_used:.0f}MB')
+        else:
+            output = model(images)
+
+            # measure accuracy and record loss
+            loss = criterion(output, target)
+            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+
+            acc1 = reduce_tensor(acc1)
+            acc5 = reduce_tensor(acc5)
+            loss = reduce_tensor(loss)
+
+            loss_meter.update(loss.item(), target.size(0))
+            acc1_meter.update(acc1.item(), target.size(0))
+            acc5_meter.update(acc5.item(), target.size(0))
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+            if idx % config.PRINT_FREQ == 0:
+                memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+                logger.info(
+                    f'Test: [{idx}/{len(data_loader)}]\t'
+                    f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                    f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                    f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
+                    f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
+                    f'Mem {memory_used:.0f}MB')
+    if is_intermediate:
+        logger.info(f' * Attention_Loss_0 {loss_attn_list[0].avg:.3f} Attention_Loss_1 {loss_attn_list[1].avg:.3f} Attention_Loss_2 {loss_attn_list[2].avg:.3f} Attention_Loss_3 {loss_attn_list[3].avg:.3f} Hidden_Loss_0 {loss_hidden_list[0].avg:.3f} Hidden_Loss_1 {loss_hidden_list[1].avg:.3f} Hidden_Loss_2 {loss_hidden_list[2].avg:.3f} Hidden_Loss_3 {loss_hidden_list[3].avg:.3f}')
+        return
+    else:
+        logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
+        return acc1_meter.avg, acc5_meter.avg, loss_meter.avg
+
+
+@torch.no_grad()
+def throughput(data_loader, model, logger):
+    model.eval()
+
+    for idx, (images, _) in enumerate(data_loader):
+        images = images.cuda(non_blocking=True)
+        batch_size = images.shape[0]
+        for i in range(50):
+            model(images)
+        torch.cuda.synchronize()
+        logger.info(f"throughput averaged with 30 times")
+        tic1 = time.time()
+        for i in range(30):
+            model(images)
+        torch.cuda.synchronize()
+        tic2 = time.time()
+        logger.info(f"batch_size {batch_size} throughput {30 * batch_size / (tic2 - tic1)}")
+        return
 
 
 if __name__ == '__main__':
