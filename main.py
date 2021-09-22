@@ -97,6 +97,32 @@ def soft_cross_entropy(predicts, targets):
             #input()
             return loss_batch.mean()
 
+def cal_intermediate_loss(student_attn_list, student_hidden_list,
+                            teacher_attn_list, teacher_hidden_list, is_debug=False):
+        N = len(student_attn_list)
+        ## Attention loss
+        attn_loss = 0.
+        for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
+            if is_debug:
+                print(student_att[0,0,0,:], teacher_att[0,0,0,:])
+                input('paused!')
+            #student_att = torch.where(student_att <= -1e2, torch.zeros_like(student_att).to(student_att.device), student_att)
+            #teacher_att = torch.where(teacher_att <= -1e2, torch.zeros_like(teacher_att).to(teacher_att.device), teacher_att)
+            tmp_loss = torch.nn.MSELoss()(student_att, teacher_att)
+            #tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
+            attn_loss += tmp_loss
+        ## Hidden loss
+        hidden_loss = 0.
+        for student_hidden, teacher_hidden in zip(student_hidden_list, teacher_hidden_list):
+            #tmp_loss = torch.nn.MSELoss()(student_hidden, teacher_hidden)
+            if is_debug:
+                print(student_hidden[0,0,:], teacher_hidden[0,0,:])
+                #print(student_hidden.shape) #128*3136*192
+                input('paused!')
+            tmp_loss = torch.nn.MSELoss()(student_hidden, teacher_hidden)
+            #tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
+            hidden_loss += tmp_loss
+        return attn_loss/N, hidden_loss/N
 
 def main(config):
     dataset_train, dataset_val, data_loader_train, data_loader_val, mixup_fn = build_loader(config)
@@ -257,32 +283,6 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
 
     start = time.time()
     end = time.time()
-    def cal_intermediate_loss(student_attn_list, student_hidden_list,
-                            teacher_attn_list, teacher_hidden_list, is_debug=False):
-        N = len(student_attn_list)
-        ## Attention loss
-        attn_loss = 0.
-        for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
-            if is_debug:
-                print(student_att[0,0,0,:], teacher_att[0,0,0,:])
-                input('paused!')
-            student_att = torch.where(student_att <= -1e2, torch.zeros_like(student_att).to(student_att.device), student_att)
-            teacher_att = torch.where(teacher_att <= -1e2, torch.zeros_like(teacher_att).to(teacher_att.device), teacher_att)
-            tmp_loss = torch.nn.MSELoss()(student_att, teacher_att)
-            #tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
-            attn_loss += tmp_loss
-        ## Hidden loss
-        hidden_loss = 0.
-        for student_hidden, teacher_hidden in zip(student_hidden_list, teacher_hidden_list):
-            #tmp_loss = torch.nn.MSELoss()(student_hidden, teacher_hidden)
-            if is_debug:
-                print(student_hidden[0,0,:], teacher_hidden[0,0,:])
-                #print(student_hidden.shape) #128*3136*192
-                input('paused!')
-            tmp_loss = torch.nn.MSELoss()(student_hidden, teacher_hidden)
-            #tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
-            hidden_loss += tmp_loss
-        return attn_loss/N, hidden_loss/N
 
     for idx, (samples, targets) in enumerate(data_loader):
         if idx > 10:
@@ -297,30 +297,51 @@ def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion
 
         with torch.no_grad():
             attn_outputs_teacher, hidden_outputs_teacher = model_teacher(samples, layer_stage)
-        logger.info('number of layers to be distilled: %d'%len(attn_outputs_teacher))
-        attn_loss, hidden_loss = cal_intermediate_loss(attn_outputs, hidden_outputs, attn_outputs_teacher, hidden_outputs_teacher)
-        #loss = attn_loss + hidden_loss_weight[layer_stage]*hidden_loss
-        loss = attn_loss + hidden_loss
 
-        optimizer.zero_grad()
-        if config.AMP_OPT_LEVEL != "O0":
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
-            if config.TRAIN.CLIP_GRAD:
-                grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+        if config.TRAIN.ACCUMULATION_STEPS > 1:
+            attn_loss, hidden_loss = cal_intermediate_loss(attn_outputs, hidden_outputs, attn_outputs_teacher, hidden_outputs_teacher)
+            loss = attn_loss + hidden_loss
+
+            loss = loss / config.TRAIN.ACCUMULATION_STEPS
+            if config.AMP_OPT_LEVEL != "O0":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(amp.master_params(optimizer))
             else:
-                grad_norm = get_grad_norm(amp.master_params(optimizer))
+                loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(model.parameters())
+            if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
+                optimizer.step()
+                optimizer.zero_grad()
+                if lr_scheduler is not None:
+                    lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            loss.backward()
-            if config.TRAIN.CLIP_GRAD:
-                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+            attn_loss, hidden_loss = cal_intermediate_loss(attn_outputs, hidden_outputs, attn_outputs_teacher, hidden_outputs_teacher)
+            loss = attn_loss + hidden_loss
+            
+            optimizer.zero_grad()
+            if config.AMP_OPT_LEVEL != "O0":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(amp.master_params(optimizer))
             else:
-                grad_norm = get_grad_norm(model.parameters())
-        
-        optimizer.step()
-
-        if lr_scheduler is not None:
-            lr_scheduler.step_update(epoch * num_steps + idx)
+                loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(model.parameters())
+            optimizer.step()
+            if lr_scheduler is not None:
+                lr_scheduler.step_update(epoch * num_steps + idx)
 
         torch.cuda.synchronize()
 
@@ -555,20 +576,7 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
             for layer_stage in range(4):
                 student_attn_list, student_hidden_list = model(images, layer_stage)
                 teacher_attn_list, teacher_hidden_list = model_teacher(images, layer_stage)
-
-                N = len(student_attn_list)
-                ## Attention loss
-                attn_loss = 0.
-                for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
-                    tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
-                    attn_loss += tmp_loss
-                ## Hidden loss
-                hidden_loss = 0.
-                for student_hidden, teacher_hidden in zip(student_hidden_list, teacher_hidden_list):
-                    tmp_loss = torch.nn.L1Loss()(student_hidden, teacher_hidden)
-                    hidden_loss += tmp_loss
-                attn_loss, hidden_loss = attn_loss/N, hidden_loss/N
-
+                attn_loss, hidden_loss = cal_intermediate_loss(student_attn_list, student_hidden_list, teacher_attn_list, teacher_hidden_list)
                 loss_attn_list[layer_stage].update(attn_loss.item(), target.size(0))
                 loss_hidden_list[layer_stage].update(hidden_loss.item(), target.size(0))
             
