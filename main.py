@@ -106,8 +106,8 @@ def cal_intermediate_loss(student_attn_list, student_hidden_list,
             if is_debug:
                 print(student_att[0,0,0,:], teacher_att[0,0,0,:])
                 input('paused!')
-            #student_att = torch.where(student_att <= -1e2, torch.zeros_like(student_att).to(student_att.device), student_att)
-            #teacher_att = torch.where(teacher_att <= -1e2, torch.zeros_like(teacher_att).to(teacher_att.device), teacher_att)
+            student_att = torch.where(student_att <= -1e2, torch.zeros_like(student_att).to(student_att.device), student_att)
+            teacher_att = torch.where(teacher_att <= -1e2, torch.zeros_like(teacher_att).to(teacher_att.device), teacher_att)
             tmp_loss = torch.nn.MSELoss()(student_att, teacher_att)
             #tmp_loss = torch.nn.L1Loss()(student_att, teacher_att)
             attn_loss += tmp_loss
