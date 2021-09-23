@@ -196,6 +196,7 @@ _C.DISTILL.AR = 1
 _C.DISTILL.PROGRESSIVE = False
 _C.DISTILL.STUDENT_LAYER_LIST = []
 _C.DISTILL.TEACHER_LAYER_LIST = []
+_C.DISTILL.RESUME_WEIGHT_ONLY = False
 
 def _update_config_from_file(config, cfg_file):
     config.defrost()
@@ -261,9 +262,12 @@ def update_config(config, args):
         config.DISTILL.LOAD_TAR = args.load_tar
     if args.progressive:
         config.DISTILL.PROGRESSIVE = args.progressive
+    if args.resume_weight_only:
+        config.DISTILL.RESUME_WEIGHT_ONLY = args.resume_weight_only
     config.DISTILL.ALPHA = args.alpha
     config.DISTILL.STUDENT_LAYER_LIST = eval(args.student_layer_list)
     config.DISTILL.TEACHER_LAYER_LIST = eval(args.teacher_layer_list)
+    config.TRAIN.EPOCHS = args.total_train_epoch
 
     # set local rank for distributed training
     config.LOCAL_RANK = args.local_rank

@@ -83,6 +83,8 @@ def parse_option():
     parser.add_argument('--ar', default=1, type=int, help='The number of relative heads')
     parser.add_argument('--student_layer_list', default='[11]', type=str, help='The index of layer in the student to be used for distillation loss')
     parser.add_argument('--teacher_layer_list', default='[23]', type=str, help='The index of layer in the teacher to be used for distillation loss')
+    parser.add_argument('--total_train_epoch', default=300, type=int, help='the total number of epochs for training')
+    parser.add_argument('--resume_weight_only', action='store_true', help='whether to only restore weight, used for initialization of multi-stage training')
 
     args, unparsed = parser.parse_known_args()
 
@@ -202,6 +204,7 @@ def main(config):
                 logger.warning(f"auto-resume changing resume file from {config.MODEL.RESUME} to {resume_file}")
             config.defrost()
             config.MODEL.RESUME = resume_file
+            config.DISTILL.RESUME_WEIGHT_ONLY = False
             config.freeze()
             logger.info(f'auto resuming from {resume_file}')
         else:

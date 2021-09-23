@@ -26,6 +26,10 @@ def load_checkpoint(config, model, optimizer, lr_scheduler, logger):
     msg = model.load_state_dict(checkpoint['model'], strict=False)
     logger.info(msg)
     max_accuracy = 0.0
+    if config.EVAL_MODE or config.DISTILL.RESUME_WEIGHT_ONLY:
+        logger.info(f"==============> RESUME_WEIGHT_ONLY mode is on....................")
+        return max_accuracy
+
     if not config.EVAL_MODE and 'optimizer' in checkpoint and 'lr_scheduler' in checkpoint and 'epoch' in checkpoint:
         if optimizer is not None:
             optimizer.load_state_dict(checkpoint['optimizer'])
@@ -42,6 +46,13 @@ def load_checkpoint(config, model, optimizer, lr_scheduler, logger):
         logger.info(f"=> loaded successfully '{config.MODEL.RESUME}' (epoch {checkpoint['epoch']})")
         if 'max_accuracy' in checkpoint:
             max_accuracy = checkpoint['max_accuracy']
+    if not config.EVAL_MODE and 'epoch' in checkpoint:
+        config.defrost()
+        config.TRAIN.START_EPOCH = checkpoint['epoch'] + 1
+        config.freeze()
+    if not config.EVAL_MODE and 'epoch' in checkpoint:
+        if optimizer is not None:
+            optimizer.load_state_dict(checkpoint['optimizer'])
 
     del checkpoint
     torch.cuda.empty_cache()
