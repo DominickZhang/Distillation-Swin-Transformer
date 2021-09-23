@@ -28,7 +28,7 @@ from utils import load_checkpoint, save_checkpoint, get_grad_norm, auto_resume_h
 
 #from models.swin_transformer import SwinTransformer
 #from models.swin_transformer_distill_jinnian import SwinTransformerDistill
-from models.swin_transformer_distill_relation import SwinTransformerBlockRelation
+from models.swin_transformer_distill_relation import SwinTransformerRelation
 
 try:
     # noinspection PyUnresolvedReferences
@@ -255,7 +255,7 @@ def load_teacher_model():
     depths = [ 2, 2, 18, 2 ]
     num_heads = [ 6, 12, 24, 48 ]
     window_size = 7
-    model = SwinTransformerBlockRelation(img_size=224,
+    model = SwinTransformerRelation(img_size=224,
                                 patch_size=4,
                                 in_chans=3,
                                 num_classes=1000,

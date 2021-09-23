@@ -7,7 +7,7 @@
 
 from .swin_transformer import SwinTransformer
 from .swin_transformer_distill_jinnian import SwinTransformerDistill
-from .swin_transformer_distill_relation import SwinTransformerBlockRelation
+from .swin_transformer_distill_relation import SwinTransformerRelation
 from .swin_mlp import SwinMLP
 
 
@@ -31,7 +31,7 @@ def build_model(config):
                                 patch_norm=config.MODEL.SWIN.PATCH_NORM,
                                 use_checkpoint=config.TRAIN.USE_CHECKPOINT)
     elif model_type == 'swin_distill':
-        model = SwinTransformerBlockRelation(img_size=config.DATA.IMG_SIZE,
+        model = SwinTransformerRelation(img_size=config.DATA.IMG_SIZE,
                                 patch_size=config.MODEL.SWIN.PATCH_SIZE,
                                 in_chans=config.MODEL.SWIN.IN_CHANS,
                                 num_classes=config.MODEL.NUM_CLASSES,
