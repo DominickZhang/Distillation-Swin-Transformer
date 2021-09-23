@@ -85,6 +85,7 @@ def parse_option():
     parser.add_argument('--teacher_layer_list', default='[23]', type=str, help='The index of layer in the teacher to be used for distillation loss')
     parser.add_argument('--total_train_epoch', default=300, type=int, help='the total number of epochs for training')
     parser.add_argument('--resume_weight_only', action='store_true', help='whether to only restore weight, used for initialization of multi-stage training')
+    parser.add_argument('--base_lr', default=5e-4, type=float, help='the base learning rate')
 
     args, unparsed = parser.parse_known_args()
 

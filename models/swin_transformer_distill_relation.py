@@ -458,7 +458,7 @@ class SwinTransformerRelation(nn.Module):
             x = self.pos_drop(x)
 
             for index, layer in enumerate(self.layers):
-                x, _, _ = layer(x)
+                x, _ = layer(x)
 
             x = self.norm(x)  # B L C
             x = self.avgpool(x.transpose(1, 2))  # B C 1

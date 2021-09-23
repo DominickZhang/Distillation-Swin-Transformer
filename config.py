@@ -268,6 +268,7 @@ def update_config(config, args):
     config.DISTILL.STUDENT_LAYER_LIST = eval(args.student_layer_list)
     config.DISTILL.TEACHER_LAYER_LIST = eval(args.teacher_layer_list)
     config.TRAIN.EPOCHS = args.total_train_epoch
+    config.TRAIN.BASE_LR = args.base_lr
 
     # set local rank for distributed training
     config.LOCAL_RANK = args.local_rank
