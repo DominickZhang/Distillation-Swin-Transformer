@@ -99,7 +99,7 @@ def soft_cross_entropy(predicts, targets):
             return (- targets_prob * student_likelihood).mean()
 
 def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
-    N = len(student_attn_list)
+    layer_num = len(student_attn_list)
     relation_loss = 0.
     for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
         B, N, Cs = student_att[0].shape
@@ -109,7 +109,7 @@ def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
                 As_ij = (student_att[i].reshape(B, N, Ar, Cs//Ar).transpose(1, 2))@(student_att[j].reshape(B, N, Ar, Cs//Ar).permute(0, 2, 3, 1)) / (Cs/Ar)**0.5
                 At_ij = (teacher_att[i].reshape(B, N, Ar, Ct//Ar).transpose(1, 2))@(teacher_att[j].reshape(B, N, Ar, Ct//Ar).permute(0, 2, 3, 1)) / (Ct/Ar)**0.5
                 relation_loss += soft_cross_entropy(As_ij, At_ij)
-    return relation_loss/(9. * N)
+    return relation_loss/(9. * layer_num)
 
 
 def cal_intermediate_loss(student_attn_list, student_hidden_list,
