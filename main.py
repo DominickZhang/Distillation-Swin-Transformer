@@ -102,8 +102,8 @@ def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
     N = len(student_attn_list)
     relation_loss = 0.
     for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
-        B, N, Cs = student_att.shape
-        _, _, Ct = teacher_att.shape
+        B, N, Cs = student_att[0].shape
+        _, _, Ct = teacher_att[0].shape
         for i in range(3):
             for j in range(3):
                 As_ij = (student_att[i].reshape(B, N, Ar, Cs//Ar).transpose(1, 2))@(student_att[j].reshape(B, N, Ar, Cs//Ar).permute(0, 2, 3, 1)) / (Cs/Ar)**0.5
