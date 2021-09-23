@@ -192,6 +192,8 @@ _C.DISTILL.STAGE = 0
 _C.DISTILL.ALPHA = 0.0
 _C.DISTILL.ACCUMULATE_STEPS = 0
 _C.DISTILL.LOAD_TAR = False
+_C.DISTILL.AR = 1
+_C.DISTILL.PROGRESSIVE = False
 
 def _update_config_from_file(config, cfg_file):
     config.defrost()
@@ -242,6 +244,7 @@ def update_config(config, args):
         config.THROUGHPUT_MODE = True
 
     ## Jinnian: Distillation
+    config.DISTILL.AR = args.ar
     if args.teacher:
         config.DISTILL.TEACHER = args.teacher
     if args.do_distill:
@@ -255,6 +258,8 @@ def update_config(config, args):
     config.DISTILL.ALPHA = args.alpha
     if args.load_tar:
         config.DISTILL.LOAD_TAR = args.load_tar
+    if args.progressive:
+        config.DISTILL.PROGRESSIVE = args.progressive
 
     # set local rank for distributed training
     config.LOCAL_RANK = args.local_rank

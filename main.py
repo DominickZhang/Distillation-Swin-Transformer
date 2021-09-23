@@ -27,7 +27,8 @@ from logger import create_logger
 from utils import load_checkpoint, save_checkpoint, get_grad_norm, auto_resume_helper, reduce_tensor
 
 #from models.swin_transformer import SwinTransformer
-from models.swin_transformer_distill_jinnian import SwinTransformerDistill
+#from models.swin_transformer_distill_jinnian import SwinTransformerDistill
+from models.swin_transformer_distill_relation import SwinTransformerBlockRelation
 
 try:
     # noinspection PyUnresolvedReferences
@@ -75,9 +76,11 @@ def parse_option():
     parser.add_argument('--temperature', default=1.0, type=float,
                         help='the temperature for distillation loss')
     parser.add_argument('--train_intermediate', action='store_true', help='whether to train with intermediate loss')
+    parser.add_argument('--progressive', action='store_true', help='whether to use progressive distillation')
     parser.add_argument('--stage', default=0, type=int, help='the index of stage in Swin Transformer to be trained')
     parser.add_argument('--alpha', default=0.0, type=float, help='the weight to balance the soft label loss and ground-truth label loss')
     parser.add_argument('--load_tar', action='store_true', help='whether to load data from tar files')
+    parser.add_argument('--ar', default=1, type=int, help='The number of relative heads')
 
     args, unparsed = parser.parse_known_args()
 
@@ -90,10 +93,24 @@ def soft_cross_entropy(predicts, targets):
             targets_prob = torch.nn.functional.softmax(targets, dim=-1)
             #print('teacher:', torch.max(targets_prob), torch.argmax(targets_prob))
             #print('student:', torch.max(student_likelihood), torch.argmax(targets_prob))
-            loss_batch = torch.sum(- targets_prob * student_likelihood, dim=1)
+            #loss_batch = torch.sum(- targets_prob * student_likelihood, dim=-1)
             #print(loss, targets_prob.shape, loss.mean())
             #input()
-            return loss_batch.mean()
+            return (- targets_prob * student_likelihood).mean()
+
+def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
+    N = len(student_attn_list)
+    relation_loss = 0.
+    for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
+        B, N, Cs = student_att.shape
+        _, _, Ct = teacher_att.shape
+        for i in range(3):
+            for j in range(3):
+                As_ij = (student_att[i].reshape(B, N, Ar, Cs//Ar).transpose(1, 2))@(student_att[j].reshape(B, N, Ar, Cs//Ar).permute(0, 2, 3, 1)) / (Cs/Ar)**0.5
+                At_ij = (teacher_att[i].reshape(B, N, Ar, Ct//Ar).transpose(1, 2))@(teacher_att[j].reshape(B, N, Ar, Ct//Ar).permute(0, 2, 3, 1)) / (Ct/Ar)**0.5
+                relation_loss += soft_cross_entropy(As_ij, At_ij)
+    return relation_loss/(9. * N)
+
 
 def cal_intermediate_loss(student_attn_list, student_hidden_list,
                             teacher_attn_list, teacher_hidden_list, is_debug=False):
@@ -156,8 +173,10 @@ def main(config):
 
     if config.DISTILL.TRAIN_INTERMEDIATE:
         lr_scheduler = None
+        criterion_soft = cal_relation_loss
     else:
         lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
+        criterion_soft = soft_cross_entropy
 
     if config.AUG.MIXUP > 0.:
         # smoothing is handled with mixup label transform
@@ -166,8 +185,6 @@ def main(config):
         criterion_truth = LabelSmoothingCrossEntropy(smoothing=config.MODEL.LABEL_SMOOTHING)
     else:
         criterion_truth = torch.nn.CrossEntropyLoss()
-    
-    criterion_soft = soft_cross_entropy
     
     max_accuracy = 0.0
 
@@ -184,8 +201,11 @@ def main(config):
             logger.info(f'no checkpoint found in {config.OUTPUT}, ignoring auto resume')
 
     if config.MODEL.RESUME:
-        if config.DISTILL.TRAIN_INTERMEDIATE:
+        if config.DISTILL.TRAIN_INTERMEDIATE and config.DISTILL.PROGRESSIVE:
             max_accuracy = load_checkpoint(config, model_without_ddp, None, None, logger)
+            validate(config, data_loader_val, model, logger, is_intermediate=True, model_teacher=model_teacher)
+        elif config.DISTILL.TRAIN_INTERMEDIATE:
+            max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
             validate(config, data_loader_val, model, logger, is_intermediate=True, model_teacher=model_teacher)
         else:
             max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, logger)
@@ -203,7 +223,7 @@ def main(config):
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         data_loader_train.sampler.set_epoch(epoch)
         if config.DISTILL.DO_DISTILL and config.DISTILL.TRAIN_INTERMEDIATE:
-            train_one_epoch_intermediate_distill(config, model, model_teacher, criterion_soft, data_loader_train, optimizer, epoch, mixup_fn, config.DISTILL.STAGE)
+            train_one_epoch_intermediate(config, model, model_teacher, criterion_soft, data_loader_train, optimizer, epoch, mixup_fn)
             if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
                 save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
         elif config.DISTILL.DO_DISTILL:
@@ -235,7 +255,7 @@ def load_teacher_model():
     depths = [ 2, 2, 18, 2 ]
     num_heads = [ 6, 12, 24, 48 ]
     window_size = 7
-    model = SwinTransformerDistill(img_size=224,
+    model = SwinTransformerBlockRelation(img_size=224,
                                 patch_size=4,
                                 in_chans=3,
                                 num_classes=1000,
@@ -258,7 +278,104 @@ def load_teacher_model():
                                 )
     return model
 
-def train_one_epoch_intermediate_distill(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, layer_stage, lr_scheduler=None):
+def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
+    layer_id_s_list = [11]
+    layer_id_t_list = [23]
+
+    model.train()
+    optimizer.zero_grad()
+
+    model_teacher.eval()
+
+    num_steps = len(data_loader)
+    batch_time = AverageMeter()
+    loss_meter = AverageMeter()
+    norm_meter = AverageMeter()
+    #attn_loss_meter = AverageMeter()
+    #hidden_loss_meter = AverageMeter()
+
+    start = time.time()
+    end = time.time()
+
+    for idx, (samples, targets) in enumerate(data_loader):
+        samples = samples.cuda(non_blocking=True)
+        targets = targets.cuda(non_blocking=True)
+
+        if mixup_fn is not None:
+            samples, targets = mixup_fn(samples, targets)
+
+        qkv_s = model(samples, layer_id_s_list)
+
+        with torch.no_grad():
+            qkv_t = model_teacher(samples, layer_id_t_list)
+
+        if config.TRAIN.ACCUMULATION_STEPS > 1:
+            loss = criterion(qkv_s, qkv_t)
+
+            loss = loss / config.TRAIN.ACCUMULATION_STEPS
+            if config.AMP_OPT_LEVEL != "O0":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(amp.master_params(optimizer))
+            else:
+                loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(model.parameters())
+            if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
+                optimizer.step()
+                optimizer.zero_grad()
+                if lr_scheduler is not None:
+                    lr_scheduler.step_update(epoch * num_steps + idx)
+        else:
+            loss = criterion(qkv_s, qkv_t)
+            
+            optimizer.zero_grad()
+            if config.AMP_OPT_LEVEL != "O0":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(amp.master_params(optimizer))
+            else:
+                loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(model.parameters())
+            optimizer.step()
+            if lr_scheduler is not None:
+                lr_scheduler.step_update(epoch * num_steps + idx)
+
+        torch.cuda.synchronize()
+
+        loss_meter.update(loss.item(), targets.size(0))
+        norm_meter.update(grad_norm)
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if idx % config.PRINT_FREQ == 0:
+            lr = optimizer.param_groups[0]['lr']
+            memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+            etas = batch_time.avg * (num_steps - idx)
+            logger.info(
+                f'Train: [{epoch}/{config.TRAIN.EPOCHS}][{idx}/{num_steps}]\t'
+                f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
+                f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
+                f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
+                f'mem {memory_used:.0f}MB')
+    epoch_time = time.time() - start
+    logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
+
+
+
+def train_one_epoch_intermediate_progressive(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, layer_stage, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
     #layer_stage = epoch // 25 ## 25 epochs for each stage
     #layer_stage = epoch // 5
@@ -684,7 +801,9 @@ if __name__ == '__main__':
 
     #### distillation with intermediate loss
     # CUDA_VISIBLE_DEVICES=4,5,6,7 python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_all --train_intermediate --stage -1
-    # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234 main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_prog_$i --resume output/test_inter_prog/test_inter_prog_$i/ckpt_epoch_1.pth --train_intermediate --stage $i --output output/test_inter_prog 
+    # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234 main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_prog_$i --resume output/test_inter_prog/test_inter_prog_$i/ckpt_epoch_1.pth --train_intermediate --stage $i --output output/test_inter_prog
+    #### distillation with relation loss
+    #python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_all --train_intermediate
     
 
     _, config = parse_option()
