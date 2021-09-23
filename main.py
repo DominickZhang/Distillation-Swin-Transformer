@@ -154,7 +154,7 @@ def main(config):
 
     if config.DISTILL.DO_DISTILL:
         logger.info(f"Loading teacher model:{config.MODEL.TYPE}/{config.DISTILL.TEACHER}")
-        model_teacher = load_teacher_model()
+        model_teacher = load_teacher_model(type='base')
         model_teacher.cuda()
         model_teacher = torch.nn.parallel.DistributedDataParallel(model_teacher, device_ids=[config.LOCAL_RANK], broadcast_buffers=False)
         checkpoint = torch.load(config.DISTILL.TEACHER, map_location='cpu')
@@ -261,11 +261,19 @@ def main(config):
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info('Training time {}'.format(total_time_str))
 
-def load_teacher_model():
-    embed_dim = 192
-    depths = [ 2, 2, 18, 2 ]
-    num_heads = [ 6, 12, 24, 48 ]
-    window_size = 7
+def load_teacher_model(type='large'):
+    if type == 'large':
+        embed_dim = 192
+        depths = [ 2, 2, 18, 2 ]
+        num_heads = [ 6, 12, 24, 48 ]
+        window_size = 7
+    elif type == 'base':
+        embed_dim = 128
+        depths = [ 2, 2, 18, 2 ]
+        num_heads = [ 4, 8, 16, 32 ]
+        window_size = 7
+    else:
+        raise ValueError('Unsupported type: %s'%type)
     model = SwinTransformerRelation(img_size=224,
                                 patch_size=4,
                                 in_chans=3,
