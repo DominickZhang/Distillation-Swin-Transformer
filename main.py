@@ -81,6 +81,8 @@ def parse_option():
     parser.add_argument('--alpha', default=0.0, type=float, help='the weight to balance the soft label loss and ground-truth label loss')
     parser.add_argument('--load_tar', action='store_true', help='whether to load data from tar files')
     parser.add_argument('--ar', default=1, type=int, help='The number of relative heads')
+    parser.add_argument('--student_layer_list', default='[11]', type=int, help='The index of layer in the student to be used for distillation loss')
+    parser.add_argument('--teacher_layer_list', default='[23]', type=int, help='The index of layer in the teacher to be used for distillation loss')
 
     args, unparsed = parser.parse_known_args()
 
@@ -284,8 +286,8 @@ def load_teacher_model():
     return model
 
 def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
-    layer_id_s_list = [11]
-    layer_id_t_list = [23]
+    layer_id_s_list = config.DISTILL.STUDENT_LAYER_LIST
+    layer_id_t_list = config.DISTILL.TEACHER_LAYER_LIST
 
     model.train()
     optimizer.zero_grad()
@@ -315,7 +317,7 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
             qkv_t = model_teacher(samples, layer_id_t_list)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
-            loss = criterion(qkv_s, qkv_t)
+            loss = criterion(qkv_s, qkv_t, config.DISTILL.AR)
 
             loss = loss / config.TRAIN.ACCUMULATION_STEPS
             if config.AMP_OPT_LEVEL != "O0":
@@ -675,8 +677,8 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
 
 @torch.no_grad()
 def validate(config, data_loader, model, logger, is_intermediate=False, model_teacher=None):
-    layer_id_s_list = [11]
-    layer_id_t_list = [23]
+    layer_id_s_list = config.DISTILL.STUDENT_LAYER_LIST
+    layer_id_t_list = config.DISTILL.TEACHER_LAYER_LIST
     ar = config.DISTILL.AR
 
     criterion = torch.nn.CrossEntropyLoss()

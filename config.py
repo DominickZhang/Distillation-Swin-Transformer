@@ -194,6 +194,8 @@ _C.DISTILL.ACCUMULATE_STEPS = 0
 _C.DISTILL.LOAD_TAR = False
 _C.DISTILL.AR = 1
 _C.DISTILL.PROGRESSIVE = False
+_C.DISTILL.STUDENT_LAYER_LIST = []
+_C.DISTILL.TEACHER_LAYER_LIST = []
 
 def _update_config_from_file(config, cfg_file):
     config.defrost()
@@ -255,11 +257,13 @@ def update_config(config, args):
         config.DISTILL.TRAIN_INTERMEDIATE = args.train_intermediate
     if args.stage:
         config.DISTILL.STAGE = args.stage
-    config.DISTILL.ALPHA = args.alpha
     if args.load_tar:
         config.DISTILL.LOAD_TAR = args.load_tar
     if args.progressive:
         config.DISTILL.PROGRESSIVE = args.progressive
+    config.DISTILL.ALPHA = args.alpha
+    config.DISTILL.STUDENT_LAYER_LIST = eval(args.student_layer_list)
+    config.DISTILL.TEACHER_LAYER_LIST = eval(args.teacher_layer_list)
 
     # set local rank for distributed training
     config.LOCAL_RANK = args.local_rank
