@@ -670,6 +670,10 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
 
 @torch.no_grad()
 def validate(config, data_loader, model, logger, is_intermediate=False, model_teacher=None):
+    layer_id_s_list = [11]
+    layer_id_t_list = [23]
+    ar = config.DISTILL.AR
+
     criterion = torch.nn.CrossEntropyLoss()
     model.eval()
 
@@ -691,6 +695,11 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
         # compute output
         if is_intermediate:
             model_teacher.eval()
+            qkv_s = model(images, layer_id_s_list)
+            qkv_t = model_teacher(images, layer_id_t_list)
+            loss = cal_relation_loss(qkv_s, qkv_t, ar)
+            loss_meter.update(loss.item(), target.size(0))
+            '''
             loss_attn = 0.0
             loss_hidden = 0.0
             layer_num = [2, 2, 6, 2]
@@ -708,6 +717,7 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
             loss_attn_meter.update(loss_attn.item(), target.size(0))
             loss_hidden_meter.update(loss_hidden.item(), target.size(0))
             loss_meter.update(loss.item(), target.size(0))
+            '''
             
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -715,6 +725,12 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
 
             if idx % config.PRINT_FREQ == 0:
                 memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+                logger.info(
+                    f'Test: [{idx}/{len(data_loader)}]\t'
+                    f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                    f'Loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                    f'Mem {memory_used:.0f}MB')
+                '''
                 logger.info(
                     f'Test: [{idx}/{len(data_loader)}]\t'
                     f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -730,6 +746,7 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
                     f'Hidden_Loss_2 {loss_hidden_list[2].val:.4f} ({loss_hidden_list[2].avg:.4f})\t'
                     f'Hidden_Loss_3 {loss_hidden_list[3].val:.4f} ({loss_hidden_list[3].avg:.4f})\t'
                     f'Mem {memory_used:.0f}MB')
+                '''
         else:
             output = model(images)
 
@@ -759,7 +776,8 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
                     f'Acc@5 {acc5_meter.val:.3f} ({acc5_meter.avg:.3f})\t'
                     f'Mem {memory_used:.0f}MB')
     if is_intermediate:
-        logger.info(f' * Loss {loss_meter.avg:.3f}  Attention Loss {loss_attn_meter.avg:.3f}  Hidden Loss {loss_hidden_meter.avg:.3f}  Attention_Loss_0 {loss_attn_list[0].avg:.3f} Attention_Loss_1 {loss_attn_list[1].avg:.3f} Attention_Loss_2 {loss_attn_list[2].avg:.3f} Attention_Loss_3 {loss_attn_list[3].avg:.3f} Hidden_Loss_0 {loss_hidden_list[0].avg:.3f} Hidden_Loss_1 {loss_hidden_list[1].avg:.3f} Hidden_Loss_2 {loss_hidden_list[2].avg:.3f} Hidden_Loss_3 {loss_hidden_list[3].avg:.3f}')
+        logger.info(f' * Loss {loss_meter.avg:.3f}')
+        #logger.info(f' * Loss {loss_meter.avg:.3f}  Attention Loss {loss_attn_meter.avg:.3f}  Hidden Loss {loss_hidden_meter.avg:.3f}  Attention_Loss_0 {loss_attn_list[0].avg:.3f} Attention_Loss_1 {loss_attn_list[1].avg:.3f} Attention_Loss_2 {loss_attn_list[2].avg:.3f} Attention_Loss_3 {loss_attn_list[3].avg:.3f} Hidden_Loss_0 {loss_hidden_list[0].avg:.3f} Hidden_Loss_1 {loss_hidden_list[1].avg:.3f} Hidden_Loss_2 {loss_hidden_list[2].avg:.3f} Hidden_Loss_3 {loss_hidden_list[3].avg:.3f}')
         return
     else:
         logger.info(f' * Acc@1 {acc1_meter.avg:.3f} Acc@5 {acc5_meter.avg:.3f}')
