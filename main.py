@@ -681,10 +681,12 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
     layer_id_t_list = config.DISTILL.TEACHER_LAYER_LIST
     ar = config.DISTILL.AR
 
+    '''
     if dist.get_rank():
         print(layer_id_s_list, type(layer_id_s_list))
         print(layer_id_t_list, type(layer_id_t_list))
     input('paused!')
+    '''
 
     criterion = torch.nn.CrossEntropyLoss()
     model.eval()
