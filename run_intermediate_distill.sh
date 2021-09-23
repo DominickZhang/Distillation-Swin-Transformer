@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 epoch_num_interm=1
 epoch_num_pred=2
