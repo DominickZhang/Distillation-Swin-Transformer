@@ -100,6 +100,7 @@ def soft_cross_entropy(predicts, targets):
 
 def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
     layer_num = len(student_attn_list)
+    print(layer_num)
     relation_loss = 0.
     for student_att, teacher_att in zip(student_attn_list, teacher_attn_list):
         B, N, Cs = student_att[0].shape
@@ -109,6 +110,12 @@ def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
                 As_ij = (student_att[i].reshape(B, N, Ar, Cs//Ar).transpose(1, 2))@(student_att[j].reshape(B, N, Ar, Cs//Ar).permute(0, 2, 3, 1)) / (Cs/Ar)**0.5
                 At_ij = (teacher_att[i].reshape(B, N, Ar, Ct//Ar).transpose(1, 2))@(teacher_att[j].reshape(B, N, Ar, Ct//Ar).permute(0, 2, 3, 1)) / (Ct/Ar)**0.5
                 relation_loss += soft_cross_entropy(As_ij, At_ij)
+                print(relation_loss, B, N, Cs, Ct, Ar, As_ij.max(), As_ij.min(), At_ij.max(), At_ij.min())
+                print(student_att[i].max(), student_att[i].min())
+                print(student_att[j].max(), student_att[j].min())
+                print(teacher_att[i].max(), teacher_att[i].min())
+                print(teacher_att[j].max(), teacher_att[j].min())
+                print(i, j, '-'*20)
     return relation_loss/(9. * layer_num)
 
 
