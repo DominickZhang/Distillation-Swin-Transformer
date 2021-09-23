@@ -81,8 +81,8 @@ def parse_option():
     parser.add_argument('--alpha', default=0.0, type=float, help='the weight to balance the soft label loss and ground-truth label loss')
     parser.add_argument('--load_tar', action='store_true', help='whether to load data from tar files')
     parser.add_argument('--ar', default=1, type=int, help='The number of relative heads')
-    parser.add_argument('--student_layer_list', default='[11]', type=int, help='The index of layer in the student to be used for distillation loss')
-    parser.add_argument('--teacher_layer_list', default='[23]', type=int, help='The index of layer in the teacher to be used for distillation loss')
+    parser.add_argument('--student_layer_list', default='[11]', type=str, help='The index of layer in the student to be used for distillation loss')
+    parser.add_argument('--teacher_layer_list', default='[23]', type=str, help='The index of layer in the teacher to be used for distillation loss')
 
     args, unparsed = parser.parse_known_args()
 
