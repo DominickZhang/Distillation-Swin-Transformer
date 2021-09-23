@@ -332,7 +332,7 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
                 if lr_scheduler is not None:
                     lr_scheduler.step_update(epoch * num_steps + idx)
         else:
-            loss = criterion(qkv_s, qkv_t)
+            loss = criterion(qkv_s, qkv_t, config.DISTILL.AR)
             
             optimizer.zero_grad()
             if config.AMP_OPT_LEVEL != "O0":
