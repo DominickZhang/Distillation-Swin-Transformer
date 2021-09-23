@@ -1,0 +1,1369 @@
+[2021-09-22 21:46:13 swin_tiny_patch4_window7_224] (main.py 718): INFO Full config saved to output/swin_tiny_patch4_window7_224/test_inter_all_1e6/config.json
+[2021-09-22 21:46:13 swin_tiny_patch4_window7_224] (main.py 721): INFO AMP_OPT_LEVEL: O1
+AUG:
+  AUTO_AUGMENT: rand-m9-mstd0.5-inc1
+  COLOR_JITTER: 0.4
+  CUTMIX: 1.0
+  CUTMIX_MINMAX: null
+  MIXUP: 0.8
+  MIXUP_MODE: batch
+  MIXUP_PROB: 1.0
+  MIXUP_SWITCH_PROB: 0.5
+  RECOUNT: 1
+  REMODE: pixel
+  REPROB: 0.25
+BASE:
+- ''
+DATA:
+  BATCH_SIZE: 128
+  CACHE_MODE: part
+  DATASET: imagenet
+  DATA_PATH: /root/FastBaseline/data/imagenet
+  IMG_SIZE: 224
+  INTERPOLATION: bicubic
+  NUM_WORKERS: 8
+  PIN_MEMORY: true
+  ZIP_MODE: false
+DISTILL:
+  ACCUMULATE_STEPS: 0
+  ALPHA: 0.0
+  DO_DISTILL: true
+  LOAD_TAR: false
+  STAGE: -1
+  TEACHER: /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth
+  TEMPERATURE: 1.0
+  TRAIN_INTERMEDIATE: true
+EVAL_MODE: false
+LOCAL_RANK: 0
+MODEL:
+  DROP_PATH_RATE: 0.2
+  DROP_RATE: 0.0
+  LABEL_SMOOTHING: 0.1
+  NAME: swin_tiny_patch4_window7_224
+  NUM_CLASSES: 1000
+  RESUME: ''
+  SWIN:
+    APE: false
+    DEPTHS:
+    - 2
+    - 2
+    - 6
+    - 2
+    EMBED_DIM: 96
+    IN_CHANS: 3
+    MLP_RATIO: 4.0
+    NUM_HEADS:
+    - 3
+    - 6
+    - 12
+    - 24
+    PATCH_NORM: true
+    PATCH_SIZE: 4
+    QKV_BIAS: true
+    QK_SCALE: null
+    WINDOW_SIZE: 7
+  SWIN_MLP:
+    APE: false
+    DEPTHS:
+    - 2
+    - 2
+    - 6
+    - 2
+    EMBED_DIM: 96
+    IN_CHANS: 3
+    MLP_RATIO: 4.0
+    NUM_HEADS:
+    - 3
+    - 6
+    - 12
+    - 24
+    PATCH_NORM: true
+    PATCH_SIZE: 4
+    WINDOW_SIZE: 7
+  TYPE: swin_distill
+OUTPUT: output/swin_tiny_patch4_window7_224/test_inter_all_1e6
+PRINT_FREQ: 10
+SAVE_FREQ: 1
+SEED: 0
+TAG: test_inter_all_1e6
+TEST:
+  CROP: true
+THROUGHPUT_MODE: false
+TRAIN:
+  ACCUMULATION_STEPS: 0
+  AUTO_RESUME: true
+  BASE_LR: 1.0e-06
+  CLIP_GRAD: 5.0
+  EPOCHS: 4
+  LR_SCHEDULER:
+    DECAY_EPOCHS: 30
+    DECAY_RATE: 0.1
+    NAME: cosine
+  MIN_LR: 1.0e-05
+  OPTIMIZER:
+    BETAS:
+    - 0.9
+    - 0.999
+    EPS: 1.0e-08
+    MOMENTUM: 0.9
+    NAME: adamw
+  START_EPOCH: 0
+  USE_CHECKPOINT: false
+  WARMUP_EPOCHS: 20
+  WARMUP_LR: 1.0e-06
+  WEIGHT_DECAY: 0.05
+
+[2021-09-22 21:46:18 swin_tiny_patch4_window7_224] (main.py 129): INFO Loading teacher model:swin_distill//mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth
+[2021-09-22 21:46:22 swin_tiny_patch4_window7_224] (main.py 135): INFO <All keys matched successfully>
+[2021-09-22 21:46:22 swin_tiny_patch4_window7_224] (main.py 139): INFO Creating model:swin_distill/swin_tiny_patch4_window7_224
+[2021-09-22 21:46:23 swin_tiny_patch4_window7_224] (main.py 142): INFO SwinTransformerDistill(
+  (patch_embed): PatchEmbed(
+    (proj): Conv2d(3, 96, kernel_size=(4, 4), stride=(4, 4))
+    (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+  )
+  (pos_drop): Dropout(p=0.0, inplace=False)
+  (layers): ModuleList(
+    (0): BasicLayerDistill(
+      dim=96, input_resolution=(56, 56), depth=2
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=96, input_resolution=(56, 56), num_heads=3, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=96, window_size=(7, 7), num_heads=3
+            (qkv): Linear(in_features=96, out_features=288, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=96, out_features=96, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): Identity()
+          (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=96, out_features=384, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=384, out_features=96, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=96, input_resolution=(56, 56), num_heads=3, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=96, window_size=(7, 7), num_heads=3
+            (qkv): Linear(in_features=96, out_features=288, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=96, out_features=96, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=96, out_features=384, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=384, out_features=96, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (downsample): PatchMerging(
+        input_resolution=(56, 56), dim=96
+        (reduction): Linear(in_features=384, out_features=192, bias=False)
+        (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (1): BasicLayerDistill(
+      dim=192, input_resolution=(28, 28), depth=2
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=192, input_resolution=(28, 28), num_heads=6, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=192, window_size=(7, 7), num_heads=6
+            (qkv): Linear(in_features=192, out_features=576, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=192, out_features=192, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=192, out_features=768, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=768, out_features=192, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=192, input_resolution=(28, 28), num_heads=6, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=192, window_size=(7, 7), num_heads=6
+            (qkv): Linear(in_features=192, out_features=576, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=192, out_features=192, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=192, out_features=768, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=768, out_features=192, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (downsample): PatchMerging(
+        input_resolution=(28, 28), dim=192
+        (reduction): Linear(in_features=768, out_features=384, bias=False)
+        (norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (2): BasicLayerDistill(
+      dim=384, input_resolution=(14, 14), depth=6
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (2): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (3): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (4): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (5): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (downsample): PatchMerging(
+        input_resolution=(14, 14), dim=384
+        (reduction): Linear(in_features=1536, out_features=768, bias=False)
+        (norm): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (3): BasicLayerDistill(
+      dim=768, input_resolution=(7, 7), depth=2
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=768, input_resolution=(7, 7), num_heads=24, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=768, window_size=(7, 7), num_heads=24
+            (qkv): Linear(in_features=768, out_features=2304, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=768, out_features=768, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=768, out_features=3072, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=3072, out_features=768, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=768, input_resolution=(7, 7), num_heads=24, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=768, window_size=(7, 7), num_heads=24
+            (qkv): Linear(in_features=768, out_features=2304, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=768, out_features=768, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=768, out_features=3072, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=3072, out_features=768, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+    )
+  )
+  (norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+  (avgpool): AdaptiveAvgPool1d(output_size=1)
+  (head): Linear(in_features=768, out_features=1000, bias=True)
+  (fit_dense_C): ModuleList(
+    (0): Linear(in_features=96, out_features=192, bias=True)
+    (1): Linear(in_features=192, out_features=384, bias=True)
+    (2): Linear(in_features=384, out_features=768, bias=True)
+    (3): Linear(in_features=768, out_features=1536, bias=True)
+  )
+  (fit_dense_M): ModuleList(
+    (0): Linear(in_features=3, out_features=6, bias=True)
+    (1): Linear(in_features=6, out_features=12, bias=True)
+    (2): Linear(in_features=12, out_features=24, bias=True)
+    (3): Linear(in_features=24, out_features=48, bias=True)
+  )
+)
+[2021-09-22 21:46:23 swin_tiny_patch4_window7_224] (main.py 152): INFO number of params: 29859574
+[2021-09-22 21:46:23 swin_tiny_patch4_window7_224] (main.py 155): INFO number of GFLOPs: 4.49440512
+[2021-09-22 21:46:23 swin_tiny_patch4_window7_224] (main.py 184): INFO no checkpoint found in output/swin_tiny_patch4_window7_224/test_inter_all_1e6, ignoring auto resume
+[2021-09-22 21:46:23 swin_tiny_patch4_window7_224] (main.py 201): INFO Start training
+[2021-09-22 21:46:23 swin_tiny_patch4_window7_224] (main.py 266): INFO Training stage: -1...
+[2021-09-22 21:46:34 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][0/1251]	eta 3:55:28 lr 0.000001	time 11.2935 (11.2935)	loss 607.3353 (607.3353)	attn_loss 588.8871 (588.8871)	hidden_loss 18.4482 (18.4482)	grad_norm inf (inf)	mem 26107MB
+[2021-09-22 21:46:47 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][10/1251]	eta 0:44:20 lr 0.000001	time 1.1982 (2.1442)	loss 584.3492 (598.6202)	attn_loss 562.9743 (578.6272)	hidden_loss 21.3749 (19.9929)	grad_norm 674.2411 (inf)	mem 26436MB
+[2021-09-22 21:46:59 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][20/1251]	eta 0:34:43 lr 0.000001	time 1.1836 (1.6928)	loss 570.6133 (591.9591)	attn_loss 550.1030 (571.7962)	hidden_loss 20.5103 (20.1629)	grad_norm 671.5047 (inf)	mem 26437MB
+[2021-09-22 21:47:10 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][30/1251]	eta 0:31:10 lr 0.000001	time 1.1907 (1.5322)	loss 601.4514 (589.9093)	attn_loss 579.9477 (569.7626)	hidden_loss 21.5037 (20.1467)	grad_norm 680.0229 (inf)	mem 26437MB
+[2021-09-22 21:47:22 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][40/1251]	eta 0:29:15 lr 0.000001	time 1.1935 (1.4497)	loss 577.8909 (589.7900)	attn_loss 556.8154 (569.5391)	hidden_loss 21.0755 (20.2508)	grad_norm 675.0929 (inf)	mem 26437MB
+[2021-09-22 21:47:34 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][50/1251]	eta 0:28:01 lr 0.000001	time 1.2037 (1.4001)	loss 603.5621 (589.6906)	attn_loss 584.2993 (569.4910)	hidden_loss 19.2628 (20.1996)	grad_norm 670.0671 (inf)	mem 26437MB
+[2021-09-22 21:47:46 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][60/1251]	eta 0:27:07 lr 0.000001	time 1.2046 (1.3666)	loss 601.3441 (590.8970)	attn_loss 580.4437 (570.6547)	hidden_loss 20.9003 (20.2423)	grad_norm 674.1759 (inf)	mem 26439MB
+[2021-09-22 21:47:58 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][70/1251]	eta 0:26:25 lr 0.000001	time 1.2013 (1.3421)	loss 573.9650 (590.6122)	attn_loss 553.2507 (570.3465)	hidden_loss 20.7143 (20.2657)	grad_norm 670.6429 (inf)	mem 26439MB
+[2021-09-22 21:48:10 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][80/1251]	eta 0:25:50 lr 0.000001	time 1.1995 (1.3238)	loss 577.7114 (589.5663)	attn_loss 556.2235 (569.2951)	hidden_loss 21.4879 (20.2712)	grad_norm 677.9106 (inf)	mem 26439MB
+[2021-09-22 21:48:22 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][90/1251]	eta 0:25:20 lr 0.000001	time 1.1965 (1.3097)	loss 603.2305 (589.0821)	attn_loss 584.1006 (568.8036)	hidden_loss 19.1299 (20.2785)	grad_norm 673.2558 (inf)	mem 26439MB
+[2021-09-22 21:48:34 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][100/1251]	eta 0:24:54 lr 0.000001	time 1.1990 (1.2981)	loss 598.4320 (589.3046)	attn_loss 579.6758 (569.0673)	hidden_loss 18.7562 (20.2373)	grad_norm 665.8302 (inf)	mem 26439MB
+[2021-09-22 21:48:46 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][110/1251]	eta 0:24:30 lr 0.000001	time 1.1830 (1.2887)	loss 605.5828 (590.0881)	attn_loss 584.3347 (569.8840)	hidden_loss 21.2481 (20.2041)	grad_norm 671.7956 (inf)	mem 26439MB
+[2021-09-22 21:48:58 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][120/1251]	eta 0:24:09 lr 0.000001	time 1.2224 (1.2813)	loss 592.0328 (589.9401)	attn_loss 570.0546 (569.7337)	hidden_loss 21.9782 (20.2063)	grad_norm 672.5721 (inf)	mem 26439MB
+[2021-09-22 21:49:10 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][130/1251]	eta 0:23:48 lr 0.000001	time 1.1847 (1.2745)	loss 554.5868 (589.7200)	attn_loss 534.9663 (569.5473)	hidden_loss 19.6205 (20.1727)	grad_norm 663.4719 (inf)	mem 26439MB
+[2021-09-22 21:49:22 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][140/1251]	eta 0:23:29 lr 0.000001	time 1.1871 (1.2687)	loss 598.6013 (589.7743)	attn_loss 579.3112 (569.6145)	hidden_loss 19.2902 (20.1598)	grad_norm 673.8063 (inf)	mem 26439MB
+[2021-09-22 21:49:34 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][150/1251]	eta 0:23:11 lr 0.000001	time 1.1946 (1.2639)	loss 588.8461 (589.3085)	attn_loss 567.4049 (569.1730)	hidden_loss 21.4412 (20.1355)	grad_norm 658.6736 (inf)	mem 26439MB
+[2021-09-22 21:49:46 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][160/1251]	eta 0:22:54 lr 0.000001	time 1.2069 (1.2599)	loss 555.3025 (588.9709)	attn_loss 535.9667 (568.8787)	hidden_loss 19.3358 (20.0922)	grad_norm 656.3192 (inf)	mem 26439MB
+[2021-09-22 21:49:58 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][170/1251]	eta 0:22:37 lr 0.000001	time 1.1906 (1.2562)	loss 574.5454 (588.3694)	attn_loss 554.4406 (568.2881)	hidden_loss 20.1049 (20.0813)	grad_norm 674.8705 (inf)	mem 26439MB
+[2021-09-22 21:50:10 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][180/1251]	eta 0:22:22 lr 0.000001	time 1.1977 (1.2531)	loss 554.0126 (588.3999)	attn_loss 534.4698 (568.3323)	hidden_loss 19.5428 (20.0676)	grad_norm 665.9579 (inf)	mem 26439MB
+[2021-09-22 21:50:22 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][190/1251]	eta 0:22:06 lr 0.000001	time 1.1945 (1.2502)	loss 596.3204 (588.5417)	attn_loss 575.8750 (568.5013)	hidden_loss 20.4454 (20.0403)	grad_norm 664.0067 (inf)	mem 26439MB
+[2021-09-22 21:50:34 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][200/1251]	eta 0:21:51 lr 0.000001	time 1.1863 (1.2476)	loss 582.7133 (588.6921)	attn_loss 562.9702 (568.6746)	hidden_loss 19.7431 (20.0175)	grad_norm 670.1484 (inf)	mem 26439MB
+[2021-09-22 21:50:46 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][210/1251]	eta 0:21:36 lr 0.000001	time 1.1816 (1.2452)	loss 557.8405 (588.4407)	attn_loss 538.9913 (568.4576)	hidden_loss 18.8492 (19.9831)	grad_norm 659.6696 (inf)	mem 26439MB
+[2021-09-22 21:50:58 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][220/1251]	eta 0:21:21 lr 0.000001	time 1.1979 (1.2429)	loss 600.5097 (588.6096)	attn_loss 582.5480 (568.6524)	hidden_loss 17.9617 (19.9573)	grad_norm 664.4833 (inf)	mem 26439MB
+[2021-09-22 21:51:10 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][230/1251]	eta 0:21:07 lr 0.000001	time 1.1971 (1.2410)	loss 595.8327 (588.5702)	attn_loss 574.8174 (568.6442)	hidden_loss 21.0153 (19.9260)	grad_norm 669.2880 (inf)	mem 26439MB
+[2021-09-22 21:51:22 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][240/1251]	eta 0:20:52 lr 0.000001	time 1.1880 (1.2391)	loss 593.5097 (588.4534)	attn_loss 574.8015 (568.5538)	hidden_loss 18.7082 (19.8997)	grad_norm 669.0077 (inf)	mem 26439MB
+[2021-09-22 21:51:34 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][250/1251]	eta 0:20:38 lr 0.000001	time 1.1854 (1.2373)	loss 599.1823 (588.3121)	attn_loss 580.4823 (568.4210)	hidden_loss 18.7000 (19.8911)	grad_norm 672.2316 (inf)	mem 26439MB
+[2021-09-22 21:51:46 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][260/1251]	eta 0:20:24 lr 0.000001	time 1.2009 (1.2360)	loss 591.2297 (588.1282)	attn_loss 572.9380 (568.2559)	hidden_loss 18.2916 (19.8723)	grad_norm 663.7919 (inf)	mem 26439MB
+[2021-09-22 21:51:58 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][270/1251]	eta 0:20:11 lr 0.000001	time 1.1949 (1.2345)	loss 594.1556 (588.2463)	attn_loss 576.0283 (568.4070)	hidden_loss 18.1273 (19.8392)	grad_norm 667.0678 (inf)	mem 26439MB
+[2021-09-22 21:52:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][280/1251]	eta 0:19:57 lr 0.000001	time 1.2022 (1.2332)	loss 574.5141 (587.8701)	attn_loss 554.8178 (568.0554)	hidden_loss 19.6963 (19.8147)	grad_norm 669.7217 (inf)	mem 26439MB
+[2021-09-22 21:52:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][290/1251]	eta 0:19:43 lr 0.000001	time 1.1975 (1.2319)	loss 585.1710 (587.8953)	attn_loss 564.2125 (568.1067)	hidden_loss 20.9584 (19.7886)	grad_norm 674.7839 (inf)	mem 26439MB
+[2021-09-22 21:52:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][300/1251]	eta 0:19:30 lr 0.000001	time 1.2007 (1.2308)	loss 602.0023 (587.8628)	attn_loss 582.8625 (568.0883)	hidden_loss 19.1398 (19.7746)	grad_norm 671.9219 (inf)	mem 26439MB
+[2021-09-22 21:52:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][310/1251]	eta 0:19:17 lr 0.000001	time 1.2049 (1.2297)	loss 538.4718 (587.5995)	attn_loss 519.9333 (567.8525)	hidden_loss 18.5385 (19.7470)	grad_norm 666.6271 (inf)	mem 26439MB
+[2021-09-22 21:52:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][320/1251]	eta 0:19:03 lr 0.000001	time 1.1892 (1.2286)	loss 607.5958 (587.2778)	attn_loss 590.1339 (567.5723)	hidden_loss 17.4619 (19.7055)	grad_norm 666.8978 (inf)	mem 26439MB
+[2021-09-22 21:53:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][330/1251]	eta 0:18:50 lr 0.000001	time 1.2026 (1.2276)	loss 589.8727 (587.1941)	attn_loss 569.7330 (567.5160)	hidden_loss 20.1398 (19.6781)	grad_norm 665.1379 (inf)	mem 26439MB
+[2021-09-22 21:53:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][340/1251]	eta 0:18:37 lr 0.000001	time 1.2002 (1.2266)	loss 544.6989 (586.7395)	attn_loss 525.8507 (567.0888)	hidden_loss 18.8482 (19.6508)	grad_norm 665.5052 (inf)	mem 26439MB
+[2021-09-22 21:53:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][350/1251]	eta 0:18:24 lr 0.000001	time 1.2121 (1.2258)	loss 600.9568 (586.7480)	attn_loss 583.3950 (567.1329)	hidden_loss 17.5618 (19.6151)	grad_norm 670.6363 (inf)	mem 26439MB
+[2021-09-22 21:53:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][360/1251]	eta 0:18:11 lr 0.000001	time 1.1913 (1.2250)	loss 591.8322 (586.7818)	attn_loss 573.4659 (567.1965)	hidden_loss 18.3663 (19.5853)	grad_norm 671.0180 (inf)	mem 26439MB
+[2021-09-22 21:53:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][370/1251]	eta 0:17:58 lr 0.000001	time 1.2054 (1.2242)	loss 583.4683 (586.5782)	attn_loss 563.6336 (567.0182)	hidden_loss 19.8346 (19.5600)	grad_norm 661.1872 (inf)	mem 26439MB
+[2021-09-22 21:54:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][380/1251]	eta 0:17:45 lr 0.000001	time 1.2020 (1.2235)	loss 584.8638 (586.4268)	attn_loss 564.5451 (566.8977)	hidden_loss 20.3187 (19.5291)	grad_norm 663.3220 (inf)	mem 26439MB
+[2021-09-22 21:54:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][390/1251]	eta 0:17:32 lr 0.000001	time 1.1970 (1.2227)	loss 600.7202 (586.5304)	attn_loss 583.2789 (567.0300)	hidden_loss 17.4413 (19.5003)	grad_norm 668.0153 (inf)	mem 26439MB
+[2021-09-22 21:54:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][400/1251]	eta 0:17:19 lr 0.000001	time 1.2009 (1.2220)	loss 558.3330 (586.4243)	attn_loss 540.3882 (566.9636)	hidden_loss 17.9448 (19.4607)	grad_norm 660.8734 (inf)	mem 26439MB
+[2021-09-22 21:54:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][410/1251]	eta 0:17:07 lr 0.000001	time 1.1920 (1.2215)	loss 565.6131 (586.3640)	attn_loss 546.6055 (566.9366)	hidden_loss 19.0076 (19.4274)	grad_norm 650.2239 (inf)	mem 26439MB
+[2021-09-22 21:54:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][420/1251]	eta 0:16:54 lr 0.000001	time 1.2193 (1.2210)	loss 598.1483 (586.3761)	attn_loss 581.0503 (566.9826)	hidden_loss 17.0980 (19.3935)	grad_norm 670.9558 (inf)	mem 26439MB
+[2021-09-22 21:55:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][430/1251]	eta 0:16:41 lr 0.000001	time 1.2121 (1.2204)	loss 598.3560 (586.3045)	attn_loss 581.0586 (566.9465)	hidden_loss 17.2975 (19.3580)	grad_norm 662.8378 (inf)	mem 26439MB
+[2021-09-22 21:55:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][440/1251]	eta 0:16:29 lr 0.000001	time 1.2001 (1.2199)	loss 598.2736 (586.3074)	attn_loss 581.0680 (566.9858)	hidden_loss 17.2056 (19.3216)	grad_norm 663.6514 (inf)	mem 26439MB
+[2021-09-22 21:55:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][450/1251]	eta 0:16:16 lr 0.000001	time 1.1850 (1.2193)	loss 589.7559 (586.3459)	attn_loss 572.5604 (567.0596)	hidden_loss 17.1956 (19.2863)	grad_norm 664.1172 (inf)	mem 26439MB
+[2021-09-22 21:55:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][460/1251]	eta 0:16:04 lr 0.000001	time 1.1888 (1.2188)	loss 547.5485 (586.3434)	attn_loss 529.5610 (567.0785)	hidden_loss 17.9875 (19.2650)	grad_norm 663.0748 (inf)	mem 26439MB
+[2021-09-22 21:55:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][470/1251]	eta 0:15:51 lr 0.000001	time 1.2042 (1.2184)	loss 571.6806 (586.3372)	attn_loss 553.8425 (567.0927)	hidden_loss 17.8381 (19.2444)	grad_norm 663.3679 (inf)	mem 26439MB
+[2021-09-22 21:56:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][480/1251]	eta 0:15:39 lr 0.000001	time 1.1922 (1.2180)	loss 594.3461 (586.2475)	attn_loss 578.1127 (567.0383)	hidden_loss 16.2334 (19.2092)	grad_norm 653.2033 (inf)	mem 26439MB
+[2021-09-22 21:56:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][490/1251]	eta 0:15:26 lr 0.000001	time 1.1786 (1.2175)	loss 568.0218 (586.1194)	attn_loss 549.9120 (566.9416)	hidden_loss 18.1098 (19.1778)	grad_norm 664.4982 (inf)	mem 26439MB
+[2021-09-22 21:56:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][500/1251]	eta 0:15:14 lr 0.000001	time 1.2007 (1.2171)	loss 544.3145 (585.9860)	attn_loss 526.7136 (566.8397)	hidden_loss 17.6009 (19.1463)	grad_norm 657.8965 (inf)	mem 26439MB
+[2021-09-22 21:56:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][510/1251]	eta 0:15:01 lr 0.000001	time 1.1885 (1.2168)	loss 592.6300 (585.7971)	attn_loss 576.6234 (566.6837)	hidden_loss 16.0066 (19.1134)	grad_norm 655.7206 (inf)	mem 26439MB
+[2021-09-22 21:56:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][520/1251]	eta 0:14:49 lr 0.000001	time 1.2164 (1.2164)	loss 587.7908 (585.7902)	attn_loss 571.6508 (566.7139)	hidden_loss 16.1399 (19.0763)	grad_norm 659.0728 (inf)	mem 26439MB
+[2021-09-22 21:57:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][530/1251]	eta 0:14:36 lr 0.000001	time 1.2044 (1.2161)	loss 557.1815 (585.6894)	attn_loss 539.9387 (566.6323)	hidden_loss 17.2428 (19.0571)	grad_norm 664.0892 (inf)	mem 26439MB
+[2021-09-22 21:57:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][540/1251]	eta 0:14:24 lr 0.000001	time 1.1965 (1.2157)	loss 550.0682 (585.5720)	attn_loss 532.8517 (566.5460)	hidden_loss 17.2164 (19.0259)	grad_norm 656.3438 (inf)	mem 26439MB
+[2021-09-22 21:57:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][550/1251]	eta 0:14:11 lr 0.000001	time 1.1919 (1.2154)	loss 599.0067 (585.6433)	attn_loss 582.8458 (566.6552)	hidden_loss 16.1609 (18.9882)	grad_norm 658.9908 (inf)	mem 26439MB
+[2021-09-22 21:57:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][560/1251]	eta 0:13:59 lr 0.000001	time 1.2257 (1.2152)	loss 553.9117 (585.4651)	attn_loss 536.1705 (566.5104)	hidden_loss 17.7412 (18.9547)	grad_norm 659.1177 (inf)	mem 26439MB
+[2021-09-22 21:57:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][570/1251]	eta 0:13:47 lr 0.000001	time 1.2147 (1.2148)	loss 578.3821 (585.2822)	attn_loss 561.5763 (566.3592)	hidden_loss 16.8059 (18.9230)	grad_norm 660.2506 (inf)	mem 26439MB
+[2021-09-22 21:58:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][580/1251]	eta 0:13:34 lr 0.000001	time 1.1892 (1.2146)	loss 595.9553 (585.2294)	attn_loss 580.2632 (566.3435)	hidden_loss 15.6921 (18.8858)	grad_norm 658.4958 (inf)	mem 26439MB
+[2021-09-22 21:58:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][590/1251]	eta 0:13:22 lr 0.000001	time 1.1802 (1.2143)	loss 557.0262 (585.0767)	attn_loss 540.5516 (566.2277)	hidden_loss 16.4746 (18.8490)	grad_norm 660.1013 (inf)	mem 26440MB
+[2021-09-22 21:58:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][600/1251]	eta 0:13:10 lr 0.000001	time 1.1953 (1.2140)	loss 585.9568 (585.0038)	attn_loss 567.2962 (566.1840)	hidden_loss 18.6606 (18.8198)	grad_norm 662.8529 (inf)	mem 26440MB
+[2021-09-22 21:58:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][610/1251]	eta 0:12:58 lr 0.000001	time 1.1962 (1.2138)	loss 583.3412 (584.9600)	attn_loss 566.9683 (566.1799)	hidden_loss 16.3729 (18.7801)	grad_norm 658.0864 (inf)	mem 26440MB
+[2021-09-22 21:58:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][620/1251]	eta 0:12:45 lr 0.000001	time 1.2024 (1.2135)	loss 599.4985 (584.8939)	attn_loss 583.9622 (566.1500)	hidden_loss 15.5363 (18.7439)	grad_norm 666.5284 (inf)	mem 26440MB
+[2021-09-22 21:59:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][630/1251]	eta 0:12:33 lr 0.000001	time 1.2020 (1.2133)	loss 537.9180 (584.8115)	attn_loss 521.5115 (566.1055)	hidden_loss 16.4065 (18.7059)	grad_norm 661.1382 (inf)	mem 26440MB
+[2021-09-22 21:59:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][640/1251]	eta 0:12:21 lr 0.000001	time 1.1869 (1.2131)	loss 579.1970 (584.7383)	attn_loss 561.4061 (566.0639)	hidden_loss 17.7908 (18.6744)	grad_norm 658.8728 (inf)	mem 26440MB
+[2021-09-22 21:59:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][650/1251]	eta 0:12:08 lr 0.000001	time 1.1965 (1.2129)	loss 594.4753 (584.6947)	attn_loss 579.7343 (566.0557)	hidden_loss 14.7411 (18.6390)	grad_norm 664.0925 (inf)	mem 26440MB
+[2021-09-22 21:59:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][660/1251]	eta 0:11:56 lr 0.000001	time 1.1981 (1.2126)	loss 580.1803 (584.7375)	attn_loss 561.7291 (566.1270)	hidden_loss 18.4512 (18.6104)	grad_norm 654.8549 (inf)	mem 26440MB
+[2021-09-22 21:59:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][670/1251]	eta 0:11:44 lr 0.000001	time 1.1820 (1.2124)	loss 597.4641 (584.5941)	attn_loss 582.1733 (566.0249)	hidden_loss 15.2908 (18.5692)	grad_norm 651.8284 (inf)	mem 26440MB
+[2021-09-22 22:00:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][680/1251]	eta 0:11:32 lr 0.000001	time 1.1987 (1.2122)	loss 592.6601 (584.5962)	attn_loss 577.5566 (566.0658)	hidden_loss 15.1035 (18.5304)	grad_norm 664.0437 (inf)	mem 26440MB
+[2021-09-22 22:00:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][690/1251]	eta 0:11:19 lr 0.000001	time 1.1915 (1.2120)	loss 576.0169 (584.5162)	attn_loss 558.5054 (566.0182)	hidden_loss 17.5115 (18.4980)	grad_norm 656.7611 (inf)	mem 26440MB
+[2021-09-22 22:00:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][700/1251]	eta 0:11:07 lr 0.000001	time 1.1905 (1.2118)	loss 551.3477 (584.2689)	attn_loss 535.7571 (565.8004)	hidden_loss 15.5906 (18.4685)	grad_norm 657.6241 (inf)	mem 26440MB
+[2021-09-22 22:00:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][710/1251]	eta 0:10:55 lr 0.000001	time 1.1822 (1.2116)	loss 579.9495 (584.1954)	attn_loss 562.1132 (565.7619)	hidden_loss 17.8363 (18.4334)	grad_norm 654.4440 (inf)	mem 26440MB
+[2021-09-22 22:00:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][720/1251]	eta 0:10:43 lr 0.000001	time 1.2042 (1.2114)	loss 589.8501 (584.1319)	attn_loss 574.7471 (565.7327)	hidden_loss 15.1030 (18.3992)	grad_norm 661.7391 (inf)	mem 26440MB
+[2021-09-22 22:01:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][730/1251]	eta 0:10:31 lr 0.000001	time 1.2151 (1.2112)	loss 544.2000 (584.0201)	attn_loss 528.6664 (565.6600)	hidden_loss 15.5336 (18.3601)	grad_norm 658.0095 (inf)	mem 26440MB
+[2021-09-22 22:01:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][740/1251]	eta 0:10:18 lr 0.000001	time 1.2034 (1.2110)	loss 541.4502 (583.8042)	attn_loss 525.6544 (565.4829)	hidden_loss 15.7959 (18.3213)	grad_norm 649.9200 (inf)	mem 26440MB
+[2021-09-22 22:01:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][750/1251]	eta 0:10:06 lr 0.000001	time 1.1864 (1.2108)	loss 568.4076 (583.6596)	attn_loss 553.0486 (565.3711)	hidden_loss 15.3590 (18.2885)	grad_norm 657.8737 (inf)	mem 26440MB
+[2021-09-22 22:01:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][760/1251]	eta 0:09:54 lr 0.000001	time 1.2054 (1.2107)	loss 543.1118 (583.5066)	attn_loss 528.0175 (565.2540)	hidden_loss 15.0942 (18.2526)	grad_norm 640.9154 (inf)	mem 26440MB
+[2021-09-22 22:01:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][770/1251]	eta 0:09:42 lr 0.000001	time 1.1907 (1.2105)	loss 593.1530 (583.3935)	attn_loss 578.8658 (565.1794)	hidden_loss 14.2872 (18.2142)	grad_norm 662.9130 (inf)	mem 26440MB
+[2021-09-22 22:02:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][780/1251]	eta 0:09:30 lr 0.000001	time 1.2020 (1.2103)	loss 586.9418 (583.3000)	attn_loss 572.2079 (565.1210)	hidden_loss 14.7339 (18.1790)	grad_norm 656.0822 (inf)	mem 26440MB
+[2021-09-22 22:02:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][790/1251]	eta 0:09:17 lr 0.000001	time 1.2038 (1.2102)	loss 571.2068 (583.1497)	attn_loss 555.1642 (565.0050)	hidden_loss 16.0426 (18.1447)	grad_norm 660.3652 (inf)	mem 26440MB
+[2021-09-22 22:02:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][800/1251]	eta 0:09:05 lr 0.000001	time 1.1996 (1.2100)	loss 592.8755 (583.0366)	attn_loss 578.7319 (564.9308)	hidden_loss 14.1436 (18.1058)	grad_norm 660.2178 (inf)	mem 26440MB
+[2021-09-22 22:02:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][810/1251]	eta 0:08:53 lr 0.000001	time 1.1824 (1.2098)	loss 580.8445 (582.9773)	attn_loss 565.1531 (564.8981)	hidden_loss 15.6914 (18.0793)	grad_norm 652.8768 (inf)	mem 26440MB
+[2021-09-22 22:02:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][820/1251]	eta 0:08:41 lr 0.000001	time 1.2150 (1.2097)	loss 588.5654 (582.7880)	attn_loss 573.9735 (564.7453)	hidden_loss 14.5919 (18.0428)	grad_norm 658.6550 (inf)	mem 26440MB
+[2021-09-22 22:03:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][830/1251]	eta 0:08:29 lr 0.000001	time 1.2073 (1.2096)	loss 584.9318 (582.6282)	attn_loss 568.9985 (564.6145)	hidden_loss 15.9333 (18.0137)	grad_norm 657.4259 (inf)	mem 26440MB
+[2021-09-22 22:03:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][840/1251]	eta 0:08:17 lr 0.000001	time 1.1999 (1.2095)	loss 580.9247 (582.6098)	attn_loss 566.8900 (564.6355)	hidden_loss 14.0347 (17.9743)	grad_norm 651.8706 (inf)	mem 26440MB
+[2021-09-22 22:03:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][850/1251]	eta 0:08:04 lr 0.000001	time 1.1835 (1.2093)	loss 588.3801 (582.5695)	attn_loss 574.6816 (564.6299)	hidden_loss 13.6984 (17.9395)	grad_norm 656.0674 (inf)	mem 26440MB
+[2021-09-22 22:03:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][860/1251]	eta 0:07:52 lr 0.000001	time 1.1885 (1.2091)	loss 555.9205 (582.5110)	attn_loss 541.5243 (564.6108)	hidden_loss 14.3962 (17.9002)	grad_norm 648.8470 (inf)	mem 26440MB
+[2021-09-22 22:03:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][870/1251]	eta 0:07:40 lr 0.000001	time 1.1832 (1.2090)	loss 581.8597 (582.3396)	attn_loss 567.4147 (564.4749)	hidden_loss 14.4450 (17.8647)	grad_norm 653.1271 (inf)	mem 26440MB
+[2021-09-22 22:04:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][880/1251]	eta 0:07:28 lr 0.000001	time 1.2047 (1.2089)	loss 589.1016 (582.2250)	attn_loss 575.6587 (564.3949)	hidden_loss 13.4428 (17.8301)	grad_norm 650.1768 (inf)	mem 26440MB
+[2021-09-22 22:04:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][890/1251]	eta 0:07:16 lr 0.000001	time 1.1983 (1.2087)	loss 580.2565 (582.1569)	attn_loss 565.1182 (564.3625)	hidden_loss 15.1383 (17.7944)	grad_norm 652.4623 (inf)	mem 26440MB
+[2021-09-22 22:04:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][900/1251]	eta 0:07:04 lr 0.000001	time 1.1984 (1.2086)	loss 559.9411 (582.0496)	attn_loss 545.4623 (564.2928)	hidden_loss 14.4788 (17.7569)	grad_norm 661.6014 (inf)	mem 26440MB
+[2021-09-22 22:04:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][910/1251]	eta 0:06:52 lr 0.000001	time 1.1902 (1.2085)	loss 579.0866 (581.9273)	attn_loss 564.0593 (564.2053)	hidden_loss 15.0273 (17.7221)	grad_norm 650.7818 (inf)	mem 26440MB
+[2021-09-22 22:04:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][920/1251]	eta 0:06:39 lr 0.000001	time 1.1839 (1.2084)	loss 589.7420 (581.8878)	attn_loss 576.5491 (564.2060)	hidden_loss 13.1929 (17.6819)	grad_norm 655.9942 (inf)	mem 26440MB
+[2021-09-22 22:05:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][930/1251]	eta 0:06:27 lr 0.000001	time 1.2104 (1.2083)	loss 542.0768 (581.7657)	attn_loss 528.0082 (564.1246)	hidden_loss 14.0686 (17.6411)	grad_norm 651.5972 (inf)	mem 26440MB
+[2021-09-22 22:05:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][940/1251]	eta 0:06:15 lr 0.000001	time 1.2126 (1.2082)	loss 583.3220 (581.6729)	attn_loss 570.1284 (564.0693)	hidden_loss 13.1937 (17.6036)	grad_norm 657.3122 (inf)	mem 26440MB
+[2021-09-22 22:05:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][950/1251]	eta 0:06:03 lr 0.000001	time 1.1988 (1.2081)	loss 579.7033 (581.6388)	attn_loss 565.3354 (564.0694)	hidden_loss 14.3679 (17.5694)	grad_norm 658.0189 (inf)	mem 26440MB
+[2021-09-22 22:05:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][960/1251]	eta 0:05:51 lr 0.000001	time 1.1892 (1.2080)	loss 550.9315 (581.5459)	attn_loss 537.5292 (564.0162)	hidden_loss 13.4023 (17.5298)	grad_norm 657.4404 (inf)	mem 26440MB
+[2021-09-22 22:05:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][970/1251]	eta 0:05:39 lr 0.000001	time 1.2023 (1.2078)	loss 557.2635 (581.4070)	attn_loss 543.2765 (563.9147)	hidden_loss 13.9870 (17.4923)	grad_norm 651.1581 (inf)	mem 26440MB
+[2021-09-22 22:06:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][980/1251]	eta 0:05:27 lr 0.000001	time 1.1911 (1.2077)	loss 558.4035 (581.3065)	attn_loss 544.6178 (563.8530)	hidden_loss 13.7857 (17.4535)	grad_norm 648.1882 (inf)	mem 26440MB
+[2021-09-22 22:06:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][990/1251]	eta 0:05:15 lr 0.000001	time 1.1891 (1.2076)	loss 556.1365 (581.1761)	attn_loss 542.2679 (563.7600)	hidden_loss 13.8687 (17.4161)	grad_norm 648.7474 (inf)	mem 26440MB
+[2021-09-22 22:06:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1000/1251]	eta 0:05:03 lr 0.000001	time 1.1887 (1.2075)	loss 569.6909 (581.0449)	attn_loss 556.8765 (563.6672)	hidden_loss 12.8143 (17.3777)	grad_norm 657.0770 (inf)	mem 26440MB
+[2021-09-22 22:06:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1010/1251]	eta 0:04:50 lr 0.000001	time 1.2004 (1.2074)	loss 525.3013 (580.8975)	attn_loss 512.0726 (563.5603)	hidden_loss 13.2287 (17.3373)	grad_norm 640.6873 (inf)	mem 26440MB
+[2021-09-22 22:06:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1020/1251]	eta 0:04:38 lr 0.000001	time 1.2051 (1.2073)	loss 585.1694 (580.8371)	attn_loss 572.4901 (563.5399)	hidden_loss 12.6794 (17.2972)	grad_norm 650.1072 (inf)	mem 26440MB
+[2021-09-22 22:07:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1030/1251]	eta 0:04:26 lr 0.000001	time 1.1875 (1.2071)	loss 565.2763 (580.6833)	attn_loss 551.7474 (563.4185)	hidden_loss 13.5289 (17.2649)	grad_norm 647.7562 (inf)	mem 26440MB
+[2021-09-22 22:07:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1040/1251]	eta 0:04:14 lr 0.000001	time 1.1864 (1.2070)	loss 581.1301 (580.6169)	attn_loss 568.6072 (563.3943)	hidden_loss 12.5228 (17.2226)	grad_norm 651.6746 (inf)	mem 26440MB
+[2021-09-22 22:07:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1050/1251]	eta 0:04:02 lr 0.000001	time 1.1992 (1.2069)	loss 562.5359 (580.5065)	attn_loss 548.3967 (563.3202)	hidden_loss 14.1392 (17.1863)	grad_norm 655.0839 (inf)	mem 26440MB
+[2021-09-22 22:07:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1060/1251]	eta 0:03:50 lr 0.000001	time 1.2015 (1.2068)	loss 579.2005 (580.3769)	attn_loss 565.8126 (563.2270)	hidden_loss 13.3879 (17.1499)	grad_norm 644.1068 (inf)	mem 26440MB
+[2021-09-22 22:07:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1070/1251]	eta 0:03:38 lr 0.000001	time 1.1978 (1.2068)	loss 530.1353 (580.2401)	attn_loss 517.0435 (563.1288)	hidden_loss 13.0918 (17.1113)	grad_norm 640.5886 (inf)	mem 26440MB
+[2021-09-22 22:08:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1080/1251]	eta 0:03:26 lr 0.000001	time 1.1971 (1.2067)	loss 578.0250 (580.0790)	attn_loss 564.0357 (563.0031)	hidden_loss 13.9893 (17.0759)	grad_norm 645.5255 (inf)	mem 26440MB
+[2021-09-22 22:08:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1090/1251]	eta 0:03:14 lr 0.000001	time 1.2214 (1.2067)	loss 554.8821 (579.9427)	attn_loss 541.4569 (562.9038)	hidden_loss 13.4252 (17.0390)	grad_norm 653.8162 (inf)	mem 26440MB
+[2021-09-22 22:08:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1100/1251]	eta 0:03:02 lr 0.000001	time 1.2003 (1.2066)	loss 531.4437 (579.8038)	attn_loss 518.7422 (562.8002)	hidden_loss 12.7015 (17.0036)	grad_norm 649.8776 (inf)	mem 26440MB
+[2021-09-22 22:08:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1110/1251]	eta 0:02:50 lr 0.000001	time 1.1852 (1.2065)	loss 580.5556 (579.6816)	attn_loss 567.9737 (562.7156)	hidden_loss 12.5819 (16.9660)	grad_norm 641.2998 (inf)	mem 26440MB
+[2021-09-22 22:08:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1120/1251]	eta 0:02:38 lr 0.000001	time 1.2058 (1.2064)	loss 580.5706 (579.4860)	attn_loss 567.1682 (562.5568)	hidden_loss 13.4024 (16.9292)	grad_norm 649.8102 (inf)	mem 26440MB
+[2021-09-22 22:09:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1130/1251]	eta 0:02:25 lr 0.000001	time 1.1965 (1.2063)	loss 577.1183 (579.4024)	attn_loss 565.3008 (562.5104)	hidden_loss 11.8175 (16.8919)	grad_norm 660.2417 (inf)	mem 26440MB
+[2021-09-22 22:09:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1140/1251]	eta 0:02:13 lr 0.000001	time 1.2026 (1.2063)	loss 582.8460 (579.2916)	attn_loss 569.6204 (562.4361)	hidden_loss 13.2257 (16.8555)	grad_norm 659.0388 (inf)	mem 26440MB
+[2021-09-22 22:09:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1150/1251]	eta 0:02:01 lr 0.000001	time 1.1880 (1.2062)	loss 590.6362 (579.1771)	attn_loss 578.3452 (562.3580)	hidden_loss 12.2910 (16.8191)	grad_norm 651.6616 (inf)	mem 26440MB
+[2021-09-22 22:09:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1160/1251]	eta 0:01:49 lr 0.000001	time 1.1788 (1.2061)	loss 580.6870 (579.0569)	attn_loss 569.0339 (562.2757)	hidden_loss 11.6531 (16.7812)	grad_norm 654.5672 (inf)	mem 26441MB
+[2021-09-22 22:09:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1170/1251]	eta 0:01:37 lr 0.000001	time 1.2095 (1.2061)	loss 548.6046 (578.9072)	attn_loss 535.5443 (562.1622)	hidden_loss 13.0603 (16.7450)	grad_norm 646.4753 (inf)	mem 26441MB
+[2021-09-22 22:10:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1180/1251]	eta 0:01:25 lr 0.000001	time 1.2038 (1.2060)	loss 554.4657 (578.7897)	attn_loss 542.2851 (562.0851)	hidden_loss 12.1806 (16.7046)	grad_norm 654.1493 (inf)	mem 26441MB
+[2021-09-22 22:10:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1190/1251]	eta 0:01:13 lr 0.000001	time 1.1856 (1.2059)	loss 577.4506 (578.6526)	attn_loss 564.2682 (561.9867)	hidden_loss 13.1824 (16.6659)	grad_norm 648.6479 (inf)	mem 26441MB
+[2021-09-22 22:10:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1200/1251]	eta 0:01:01 lr 0.000001	time 1.1931 (1.2058)	loss 573.4805 (578.5943)	attn_loss 561.7366 (561.9666)	hidden_loss 11.7439 (16.6277)	grad_norm 644.5151 (inf)	mem 26441MB
+[2021-09-22 22:10:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1210/1251]	eta 0:00:49 lr 0.000001	time 1.2158 (1.2058)	loss 573.0521 (578.5411)	attn_loss 560.7185 (561.9508)	hidden_loss 12.3336 (16.5904)	grad_norm 655.3300 (inf)	mem 26441MB
+[2021-09-22 22:10:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1220/1251]	eta 0:00:37 lr 0.000001	time 1.2033 (1.2057)	loss 571.1003 (578.4787)	attn_loss 559.0351 (561.9257)	hidden_loss 12.0653 (16.5530)	grad_norm 651.9579 (inf)	mem 26441MB
+[2021-09-22 22:11:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1230/1251]	eta 0:00:25 lr 0.000001	time 1.1851 (1.2056)	loss 550.0414 (578.2468)	attn_loss 537.7360 (561.7283)	hidden_loss 12.3054 (16.5185)	grad_norm 637.8947 (inf)	mem 26441MB
+[2021-09-22 22:11:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1240/1251]	eta 0:00:13 lr 0.000001	time 1.1869 (1.2055)	loss 575.8957 (578.1314)	attn_loss 564.4755 (561.6499)	hidden_loss 11.4201 (16.4815)	grad_norm 647.4702 (inf)	mem 26441MB
+[2021-09-22 22:11:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [0/4][1250/1251]	eta 0:00:01 lr 0.000001	time 1.1886 (1.2053)	loss 574.9088 (578.0201)	attn_loss 563.3895 (561.5728)	hidden_loss 11.5193 (16.4472)	grad_norm 651.5489 (inf)	mem 26441MB
+[2021-09-22 22:11:31 swin_tiny_patch4_window7_224] (main.py 369): INFO EPOCH 0 training takes 0:25:08
+[2021-09-22 22:11:31 swin_tiny_patch4_window7_224] (utils.py 63): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_0.pth saving......
+[2021-09-22 22:11:32 swin_tiny_patch4_window7_224] (utils.py 65): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_0.pth saved !!!
+[2021-09-22 22:11:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][0/1251]	eta 2:33:55 lr 0.000001	time 7.3821 (7.3821)	loss 562.8803 (562.8803)	attn_loss 550.5195 (550.5195)	hidden_loss 12.3608 (12.3608)	grad_norm 655.4152 (655.4152)	mem 26441MB
+[2021-09-22 22:11:52 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][10/1251]	eta 0:36:43 lr 0.000001	time 1.1889 (1.7753)	loss 571.9340 (559.7550)	attn_loss 560.4285 (547.7533)	hidden_loss 11.5055 (12.0017)	grad_norm 646.6383 (645.8493)	mem 26441MB
+[2021-09-22 22:12:04 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][20/1251]	eta 0:30:46 lr 0.000001	time 1.2059 (1.4999)	loss 559.0840 (560.7866)	attn_loss 547.2123 (548.8774)	hidden_loss 11.8718 (11.9092)	grad_norm 639.6681 (645.2774)	mem 26441MB
+[2021-09-22 22:12:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][30/1251]	eta 0:28:30 lr 0.000001	time 1.2096 (1.4008)	loss 530.8297 (562.6345)	attn_loss 518.8903 (550.9244)	hidden_loss 11.9394 (11.7102)	grad_norm 627.5306 (644.8863)	mem 26441MB
+[2021-09-22 22:12:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][40/1251]	eta 0:27:16 lr 0.000001	time 1.1908 (1.3510)	loss 577.7337 (561.7718)	attn_loss 565.1105 (549.9910)	hidden_loss 12.6232 (11.7808)	grad_norm 653.5427 (644.8525)	mem 26441MB
+[2021-09-22 22:12:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][50/1251]	eta 0:26:26 lr 0.000001	time 1.1844 (1.3208)	loss 570.4846 (562.3053)	attn_loss 558.7872 (550.5658)	hidden_loss 11.6975 (11.7394)	grad_norm 648.9463 (644.6432)	mem 26441MB
+[2021-09-22 22:12:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][60/1251]	eta 0:25:48 lr 0.000001	time 1.1904 (1.3000)	loss 582.2832 (563.6024)	attn_loss 570.4341 (551.8687)	hidden_loss 11.8491 (11.7337)	grad_norm 648.8603 (644.7716)	mem 26441MB
+[2021-09-22 22:13:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][70/1251]	eta 0:25:17 lr 0.000001	time 1.1976 (1.2853)	loss 573.1273 (564.1770)	attn_loss 561.4540 (552.4361)	hidden_loss 11.6733 (11.7409)	grad_norm 643.1741 (644.8569)	mem 26441MB
+[2021-09-22 22:13:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][80/1251]	eta 0:24:52 lr 0.000001	time 1.1987 (1.2747)	loss 575.8549 (564.0758)	attn_loss 564.6068 (552.3610)	hidden_loss 11.2480 (11.7148)	grad_norm 650.8348 (644.7595)	mem 26441MB
+[2021-09-22 22:13:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][90/1251]	eta 0:24:30 lr 0.000001	time 1.2007 (1.2665)	loss 577.5740 (563.5362)	attn_loss 565.5645 (551.8364)	hidden_loss 12.0095 (11.6998)	grad_norm 651.1992 (644.4833)	mem 26441MB
+[2021-09-22 22:13:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][100/1251]	eta 0:24:10 lr 0.000001	time 1.1899 (1.2599)	loss 578.0802 (562.9927)	attn_loss 567.3446 (551.3216)	hidden_loss 10.7356 (11.6711)	grad_norm 644.6184 (644.5580)	mem 26441MB
+[2021-09-22 22:13:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][110/1251]	eta 0:23:50 lr 0.000001	time 1.2090 (1.2541)	loss 536.3383 (562.2394)	attn_loss 525.1833 (550.5968)	hidden_loss 11.1550 (11.6426)	grad_norm 650.7278 (644.6972)	mem 26441MB
+[2021-09-22 22:14:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][120/1251]	eta 0:23:33 lr 0.000001	time 1.2031 (1.2494)	loss 534.6711 (560.4996)	attn_loss 523.0839 (548.8727)	hidden_loss 11.5872 (11.6269)	grad_norm 642.7951 (644.3839)	mem 26441MB
+[2021-09-22 22:14:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][130/1251]	eta 0:23:16 lr 0.000001	time 1.1857 (1.2454)	loss 590.9382 (560.3173)	attn_loss 579.4240 (548.7040)	hidden_loss 11.5142 (11.6133)	grad_norm 653.2899 (644.4615)	mem 26441MB
+[2021-09-22 22:14:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][140/1251]	eta 0:22:59 lr 0.000001	time 1.1910 (1.2418)	loss 567.5592 (561.0011)	attn_loss 555.9053 (549.4166)	hidden_loss 11.6539 (11.5845)	grad_norm 655.0491 (644.7019)	mem 26441MB
+[2021-09-22 22:14:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][150/1251]	eta 0:22:43 lr 0.000001	time 1.2103 (1.2387)	loss 576.3007 (560.8432)	attn_loss 565.8680 (549.2936)	hidden_loss 10.4328 (11.5496)	grad_norm 645.0493 (644.5914)	mem 26441MB
+[2021-09-22 22:14:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][160/1251]	eta 0:22:28 lr 0.000001	time 1.1879 (1.2360)	loss 569.5263 (561.2010)	attn_loss 558.3033 (549.6836)	hidden_loss 11.2230 (11.5174)	grad_norm 637.1749 (644.4847)	mem 26441MB
+[2021-09-22 22:15:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][170/1251]	eta 0:22:13 lr 0.000001	time 1.2039 (1.2337)	loss 526.4486 (560.7440)	attn_loss 515.2305 (549.2415)	hidden_loss 11.2181 (11.5025)	grad_norm 636.3683 (644.4092)	mem 26441MB
+[2021-09-22 22:15:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][180/1251]	eta 0:21:59 lr 0.000001	time 1.1970 (1.2322)	loss 576.3580 (561.3289)	attn_loss 565.5164 (549.8577)	hidden_loss 10.8415 (11.4712)	grad_norm 647.3218 (644.4231)	mem 26441MB
+[2021-09-22 22:15:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][190/1251]	eta 0:21:45 lr 0.000001	time 1.2188 (1.2306)	loss 577.9043 (561.1669)	attn_loss 567.0292 (549.7095)	hidden_loss 10.8751 (11.4574)	grad_norm 647.8626 (644.4142)	mem 26441MB
+[2021-09-22 22:15:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][200/1251]	eta 0:21:31 lr 0.000001	time 1.2061 (1.2292)	loss 539.6352 (561.2075)	attn_loss 528.5730 (549.7758)	hidden_loss 11.0622 (11.4317)	grad_norm 638.8359 (644.2878)	mem 26441MB
+[2021-09-22 22:15:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][210/1251]	eta 0:21:17 lr 0.000001	time 1.1982 (1.2276)	loss 571.5566 (561.1905)	attn_loss 561.1870 (549.7863)	hidden_loss 10.3696 (11.4041)	grad_norm 644.1418 (644.3543)	mem 26441MB
+[2021-09-22 22:16:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][220/1251]	eta 0:21:04 lr 0.000001	time 1.1890 (1.2262)	loss 528.0100 (560.8364)	attn_loss 516.8747 (549.4397)	hidden_loss 11.1353 (11.3967)	grad_norm 642.5480 (644.2979)	mem 26441MB
+[2021-09-22 22:16:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][230/1251]	eta 0:20:50 lr 0.000001	time 1.2143 (1.2251)	loss 572.7182 (560.8496)	attn_loss 561.3348 (549.4611)	hidden_loss 11.3834 (11.3885)	grad_norm 647.1497 (644.3936)	mem 26441MB
+[2021-09-22 22:16:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][240/1251]	eta 0:20:37 lr 0.000001	time 1.2166 (1.2239)	loss 573.5544 (561.0376)	attn_loss 562.7621 (549.6601)	hidden_loss 10.7924 (11.3775)	grad_norm 641.6965 (644.4517)	mem 26441MB
+[2021-09-22 22:16:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][250/1251]	eta 0:20:24 lr 0.000001	time 1.2214 (1.2230)	loss 575.7747 (561.0902)	attn_loss 565.4169 (549.7307)	hidden_loss 10.3578 (11.3595)	grad_norm 643.7933 (644.4765)	mem 26441MB
+[2021-09-22 22:16:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][260/1251]	eta 0:20:10 lr 0.000001	time 1.1980 (1.2219)	loss 581.8218 (560.6733)	attn_loss 571.5009 (549.3349)	hidden_loss 10.3210 (11.3384)	grad_norm 638.2250 (644.2283)	mem 26441MB
+[2021-09-22 22:17:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][270/1251]	eta 0:19:58 lr 0.000001	time 1.2331 (1.2212)	loss 572.7614 (560.8317)	attn_loss 562.6095 (549.5159)	hidden_loss 10.1519 (11.3158)	grad_norm 639.9471 (644.2800)	mem 26441MB
+[2021-09-22 22:17:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][280/1251]	eta 0:19:45 lr 0.000001	time 1.2081 (1.2204)	loss 536.6979 (560.6953)	attn_loss 525.6566 (549.3929)	hidden_loss 11.0413 (11.3024)	grad_norm 639.3198 (644.1940)	mem 26441MB
+[2021-09-22 22:17:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][290/1251]	eta 0:19:32 lr 0.000001	time 1.1891 (1.2198)	loss 529.9495 (560.3267)	attn_loss 518.6344 (549.0362)	hidden_loss 11.3151 (11.2906)	grad_norm 639.3810 (644.0664)	mem 26441MB
+[2021-09-22 22:17:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][300/1251]	eta 0:19:19 lr 0.000001	time 1.1961 (1.2190)	loss 561.3345 (560.3747)	attn_loss 550.6536 (549.0942)	hidden_loss 10.6809 (11.2805)	grad_norm 645.7177 (644.0800)	mem 26441MB
+[2021-09-22 22:17:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][310/1251]	eta 0:19:06 lr 0.000001	time 1.1875 (1.2182)	loss 566.1777 (560.3534)	attn_loss 554.9193 (549.0859)	hidden_loss 11.2585 (11.2675)	grad_norm 645.9667 (644.0629)	mem 26441MB
+[2021-09-22 22:18:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][320/1251]	eta 0:18:53 lr 0.000001	time 1.2027 (1.2177)	loss 576.2289 (560.5035)	attn_loss 565.9562 (549.2558)	hidden_loss 10.2727 (11.2477)	grad_norm 647.0587 (644.0745)	mem 26441MB
+[2021-09-22 22:18:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][330/1251]	eta 0:18:40 lr 0.000001	time 1.1939 (1.2170)	loss 571.2195 (560.6791)	attn_loss 560.6778 (549.4444)	hidden_loss 10.5417 (11.2347)	grad_norm 638.8816 (644.1163)	mem 26441MB
+[2021-09-22 22:18:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][340/1251]	eta 0:18:28 lr 0.000001	time 1.1995 (1.2164)	loss 540.3307 (560.8496)	attn_loss 530.1434 (549.6388)	hidden_loss 10.1873 (11.2108)	grad_norm 637.4279 (644.0978)	mem 26441MB
+[2021-09-22 22:18:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][350/1251]	eta 0:18:15 lr 0.000001	time 1.2057 (1.2159)	loss 545.1522 (560.5877)	attn_loss 534.3835 (549.3920)	hidden_loss 10.7687 (11.1957)	grad_norm 646.3768 (644.0043)	mem 26441MB
+[2021-09-22 22:18:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][360/1251]	eta 0:18:02 lr 0.000001	time 1.2022 (1.2154)	loss 572.9745 (560.5533)	attn_loss 562.9347 (549.3738)	hidden_loss 10.0399 (11.1794)	grad_norm 631.6084 (643.8755)	mem 26441MB
+[2021-09-22 22:19:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][370/1251]	eta 0:17:50 lr 0.000001	time 1.1911 (1.2149)	loss 561.1051 (560.5817)	attn_loss 550.1396 (549.4134)	hidden_loss 10.9655 (11.1682)	grad_norm 645.8418 (643.7850)	mem 26441MB
+[2021-09-22 22:19:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][380/1251]	eta 0:17:37 lr 0.000001	time 1.1918 (1.2144)	loss 532.0420 (560.4760)	attn_loss 521.5951 (549.3257)	hidden_loss 10.4469 (11.1504)	grad_norm 635.7348 (643.6245)	mem 26441MB
+[2021-09-22 22:19:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][390/1251]	eta 0:17:25 lr 0.000001	time 1.2224 (1.2141)	loss 543.6638 (560.2677)	attn_loss 532.4109 (549.1301)	hidden_loss 11.2528 (11.1376)	grad_norm 643.7960 (643.5912)	mem 26441MB
+[2021-09-22 22:19:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][400/1251]	eta 0:17:12 lr 0.000001	time 1.1842 (1.2137)	loss 563.5736 (560.2657)	attn_loss 552.6519 (549.1353)	hidden_loss 10.9217 (11.1303)	grad_norm 634.1042 (643.4349)	mem 26441MB
+[2021-09-22 22:19:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][410/1251]	eta 0:17:00 lr 0.000001	time 1.1996 (1.2133)	loss 545.5126 (560.2400)	attn_loss 534.3505 (549.1140)	hidden_loss 11.1621 (11.1260)	grad_norm 651.6638 (643.4026)	mem 26441MB
+[2021-09-22 22:20:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][420/1251]	eta 0:16:48 lr 0.000001	time 1.2106 (1.2131)	loss 562.8696 (560.2952)	attn_loss 551.5388 (549.1861)	hidden_loss 11.3308 (11.1090)	grad_norm 641.9984 (643.3511)	mem 26441MB
+[2021-09-22 22:20:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][430/1251]	eta 0:16:35 lr 0.000001	time 1.2002 (1.2128)	loss 567.0303 (560.3035)	attn_loss 555.7613 (549.2064)	hidden_loss 11.2690 (11.0972)	grad_norm 645.5344 (643.2705)	mem 26441MB
+[2021-09-22 22:20:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][440/1251]	eta 0:16:23 lr 0.000001	time 1.1883 (1.2124)	loss 567.8207 (560.1836)	attn_loss 557.6368 (549.1006)	hidden_loss 10.1839 (11.0830)	grad_norm 638.7004 (643.1973)	mem 26441MB
+[2021-09-22 22:20:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][450/1251]	eta 0:16:10 lr 0.000001	time 1.2009 (1.2121)	loss 523.2652 (560.0329)	attn_loss 512.3967 (548.9635)	hidden_loss 10.8685 (11.0694)	grad_norm 631.7065 (643.0562)	mem 26441MB
+[2021-09-22 22:20:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][460/1251]	eta 0:15:58 lr 0.000001	time 1.2034 (1.2117)	loss 535.3561 (560.0315)	attn_loss 524.9345 (548.9775)	hidden_loss 10.4216 (11.0540)	grad_norm 643.9077 (642.9906)	mem 26441MB
+[2021-09-22 22:21:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][470/1251]	eta 0:15:46 lr 0.000001	time 1.2119 (1.2114)	loss 528.7125 (559.8558)	attn_loss 517.9823 (548.8100)	hidden_loss 10.7302 (11.0458)	grad_norm 636.2538 (642.8801)	mem 26441MB
+[2021-09-22 22:21:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][480/1251]	eta 0:15:33 lr 0.000001	time 1.1921 (1.2111)	loss 571.7657 (559.6734)	attn_loss 561.6306 (548.6430)	hidden_loss 10.1351 (11.0304)	grad_norm 652.0770 (642.8350)	mem 26441MB
+[2021-09-22 22:21:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][490/1251]	eta 0:15:21 lr 0.000001	time 1.1831 (1.2108)	loss 544.7832 (559.4835)	attn_loss 534.5262 (548.4608)	hidden_loss 10.2570 (11.0227)	grad_norm 638.3506 (642.7874)	mem 26441MB
+[2021-09-22 22:21:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][500/1251]	eta 0:15:09 lr 0.000001	time 1.2303 (1.2106)	loss 545.2001 (559.5361)	attn_loss 534.9778 (548.5205)	hidden_loss 10.2223 (11.0156)	grad_norm 640.2875 (642.7051)	mem 26441MB
+[2021-09-22 22:21:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][510/1251]	eta 0:14:56 lr 0.000001	time 1.2064 (1.2105)	loss 528.1344 (559.3490)	attn_loss 517.4320 (548.3421)	hidden_loss 10.7024 (11.0069)	grad_norm 635.3085 (642.6121)	mem 26441MB
+[2021-09-22 22:22:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][520/1251]	eta 0:14:44 lr 0.000001	time 1.1902 (1.2102)	loss 567.1531 (559.2668)	attn_loss 556.5961 (548.2707)	hidden_loss 10.5571 (10.9962)	grad_norm 642.8637 (642.5009)	mem 26441MB
+[2021-09-22 22:22:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][530/1251]	eta 0:14:32 lr 0.000001	time 1.1975 (1.2098)	loss 532.7712 (559.0082)	attn_loss 521.9816 (548.0207)	hidden_loss 10.7897 (10.9875)	grad_norm 638.6759 (642.4285)	mem 26441MB
+[2021-09-22 22:22:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][540/1251]	eta 0:14:19 lr 0.000001	time 1.1808 (1.2096)	loss 532.5256 (558.9952)	attn_loss 522.1749 (548.0169)	hidden_loss 10.3507 (10.9783)	grad_norm 634.7219 (642.4083)	mem 26441MB
+[2021-09-22 22:22:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][550/1251]	eta 0:14:07 lr 0.000001	time 1.2053 (1.2093)	loss 548.4069 (558.9192)	attn_loss 537.7330 (547.9525)	hidden_loss 10.6739 (10.9667)	grad_norm 632.5249 (642.2917)	mem 26441MB
+[2021-09-22 22:22:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][560/1251]	eta 0:13:55 lr 0.000001	time 1.1873 (1.2091)	loss 567.4317 (558.8542)	attn_loss 557.7512 (547.8943)	hidden_loss 9.6805 (10.9599)	grad_norm 631.1367 (642.2697)	mem 26441MB
+[2021-09-22 22:23:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][570/1251]	eta 0:13:43 lr 0.000001	time 1.1977 (1.2089)	loss 555.5959 (558.7396)	attn_loss 544.6494 (547.7857)	hidden_loss 10.9465 (10.9539)	grad_norm 637.9379 (642.2379)	mem 26441MB
+[2021-09-22 22:23:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][580/1251]	eta 0:13:31 lr 0.000001	time 1.1992 (1.2088)	loss 535.7825 (558.5397)	attn_loss 525.3725 (547.5957)	hidden_loss 10.4100 (10.9440)	grad_norm 635.8978 (642.1566)	mem 26441MB
+[2021-09-22 22:23:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][590/1251]	eta 0:13:18 lr 0.000001	time 1.2177 (1.2086)	loss 559.0027 (558.5016)	attn_loss 548.5244 (547.5657)	hidden_loss 10.4784 (10.9359)	grad_norm 642.0405 (642.0778)	mem 26441MB
+[2021-09-22 22:23:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][600/1251]	eta 0:13:06 lr 0.000001	time 1.1843 (1.2085)	loss 569.1876 (558.4834)	attn_loss 558.8121 (547.5537)	hidden_loss 10.3756 (10.9297)	grad_norm 633.9493 (642.0014)	mem 26441MB
+[2021-09-22 22:23:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][610/1251]	eta 0:12:54 lr 0.000001	time 1.1867 (1.2083)	loss 531.0547 (558.5515)	attn_loss 520.5240 (547.6302)	hidden_loss 10.5307 (10.9213)	grad_norm 631.2623 (641.9869)	mem 26441MB
+[2021-09-22 22:24:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][620/1251]	eta 0:12:42 lr 0.000001	time 1.1899 (1.2081)	loss 564.6022 (558.5483)	attn_loss 554.5867 (547.6373)	hidden_loss 10.0155 (10.9110)	grad_norm 643.4879 (641.9625)	mem 26441MB
+[2021-09-22 22:24:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][630/1251]	eta 0:12:30 lr 0.000001	time 1.1981 (1.2079)	loss 527.6068 (558.4865)	attn_loss 517.4705 (547.5868)	hidden_loss 10.1363 (10.8997)	grad_norm 646.5158 (641.9383)	mem 26441MB
+[2021-09-22 22:24:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][640/1251]	eta 0:12:18 lr 0.000001	time 1.2315 (1.2079)	loss 559.9832 (558.5560)	attn_loss 549.7311 (547.6643)	hidden_loss 10.2521 (10.8917)	grad_norm 632.2118 (641.9033)	mem 26441MB
+[2021-09-22 22:24:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][650/1251]	eta 0:12:05 lr 0.000001	time 1.1877 (1.2078)	loss 538.3957 (558.4865)	attn_loss 528.1041 (547.6025)	hidden_loss 10.2916 (10.8840)	grad_norm 622.0964 (641.8438)	mem 26441MB
+[2021-09-22 22:24:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][660/1251]	eta 0:11:53 lr 0.000001	time 1.1883 (1.2075)	loss 534.6567 (558.1814)	attn_loss 524.6753 (547.3018)	hidden_loss 9.9814 (10.8796)	grad_norm 636.9591 (641.7324)	mem 26441MB
+[2021-09-22 22:25:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][670/1251]	eta 0:11:41 lr 0.000001	time 1.2183 (1.2074)	loss 523.7225 (558.0763)	attn_loss 513.3395 (547.2031)	hidden_loss 10.3830 (10.8731)	grad_norm 628.9429 (641.6703)	mem 26441MB
+[2021-09-22 22:25:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][680/1251]	eta 0:11:29 lr 0.000001	time 1.1885 (1.2073)	loss 560.4772 (558.0405)	attn_loss 549.8260 (547.1750)	hidden_loss 10.6512 (10.8654)	grad_norm 641.3666 (641.6267)	mem 26441MB
+[2021-09-22 22:25:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][690/1251]	eta 0:11:17 lr 0.000001	time 1.1981 (1.2072)	loss 531.9303 (557.9989)	attn_loss 521.1490 (547.1414)	hidden_loss 10.7813 (10.8575)	grad_norm 630.3782 (641.5897)	mem 26441MB
+[2021-09-22 22:25:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][700/1251]	eta 0:11:05 lr 0.000001	time 1.1993 (1.2070)	loss 528.6013 (557.9299)	attn_loss 518.2571 (547.0784)	hidden_loss 10.3442 (10.8515)	grad_norm 632.7449 (641.5182)	mem 26441MB
+[2021-09-22 22:25:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][710/1251]	eta 0:10:52 lr 0.000001	time 1.1953 (1.2068)	loss 574.9697 (557.9326)	attn_loss 565.1078 (547.0895)	hidden_loss 9.8619 (10.8430)	grad_norm 639.5012 (641.4433)	mem 26441MB
+[2021-09-22 22:26:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][720/1251]	eta 0:10:40 lr 0.000001	time 1.2322 (1.2068)	loss 540.7371 (557.8568)	attn_loss 530.2401 (547.0176)	hidden_loss 10.4970 (10.8392)	grad_norm 636.8011 (641.3806)	mem 26441MB
+[2021-09-22 22:26:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][730/1251]	eta 0:10:28 lr 0.000001	time 1.1906 (1.2066)	loss 558.9869 (557.7362)	attn_loss 548.5083 (546.9020)	hidden_loss 10.4787 (10.8342)	grad_norm 647.4220 (641.3474)	mem 26441MB
+[2021-09-22 22:26:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][740/1251]	eta 0:10:16 lr 0.000001	time 1.1905 (1.2066)	loss 550.2530 (557.7937)	attn_loss 539.6370 (546.9671)	hidden_loss 10.6160 (10.8265)	grad_norm 638.1890 (641.3163)	mem 26441MB
+[2021-09-22 22:26:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][750/1251]	eta 0:10:04 lr 0.000001	time 1.1936 (1.2064)	loss 555.3472 (557.7140)	attn_loss 545.4444 (546.8940)	hidden_loss 9.9027 (10.8200)	grad_norm 635.6595 (641.2421)	mem 26441MB
+[2021-09-22 22:26:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][760/1251]	eta 0:09:52 lr 0.000001	time 1.2063 (1.2062)	loss 535.2880 (557.6946)	attn_loss 524.7896 (546.8818)	hidden_loss 10.4985 (10.8128)	grad_norm 634.9444 (inf)	mem 26441MB
+[2021-09-22 22:27:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][770/1251]	eta 0:09:40 lr 0.000001	time 1.2081 (1.2061)	loss 545.0386 (557.5219)	attn_loss 534.5934 (546.7160)	hidden_loss 10.4452 (10.8059)	grad_norm 636.0195 (inf)	mem 26441MB
+[2021-09-22 22:27:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][780/1251]	eta 0:09:27 lr 0.000001	time 1.1922 (1.2059)	loss 518.2191 (557.2143)	attn_loss 507.5460 (546.4142)	hidden_loss 10.6731 (10.8000)	grad_norm 623.5563 (inf)	mem 26441MB
+[2021-09-22 22:27:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][790/1251]	eta 0:09:15 lr 0.000001	time 1.1933 (1.2059)	loss 555.1423 (557.1310)	attn_loss 544.4530 (546.3377)	hidden_loss 10.6893 (10.7933)	grad_norm 637.7432 (inf)	mem 26441MB
+[2021-09-22 22:27:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][800/1251]	eta 0:09:03 lr 0.000001	time 1.2094 (1.2058)	loss 535.7433 (557.1327)	attn_loss 525.3683 (546.3453)	hidden_loss 10.3751 (10.7874)	grad_norm 630.2852 (inf)	mem 26443MB
+[2021-09-22 22:27:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][810/1251]	eta 0:08:51 lr 0.000001	time 1.1881 (1.2056)	loss 553.5424 (557.1431)	attn_loss 543.4012 (546.3635)	hidden_loss 10.1411 (10.7796)	grad_norm 635.6533 (inf)	mem 26443MB
+[2021-09-22 22:28:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][820/1251]	eta 0:08:39 lr 0.000001	time 1.1897 (1.2055)	loss 535.2331 (557.1015)	attn_loss 525.1165 (546.3294)	hidden_loss 10.1166 (10.7721)	grad_norm 625.8405 (inf)	mem 26443MB
+[2021-09-22 22:28:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][830/1251]	eta 0:08:27 lr 0.000001	time 1.2172 (1.2055)	loss 553.4133 (557.0731)	attn_loss 542.3795 (546.3070)	hidden_loss 11.0338 (10.7661)	grad_norm 636.1447 (inf)	mem 26443MB
+[2021-09-22 22:28:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][840/1251]	eta 0:08:15 lr 0.000001	time 1.1956 (1.2053)	loss 556.5034 (556.9592)	attn_loss 546.4131 (546.1998)	hidden_loss 10.0903 (10.7594)	grad_norm 630.5679 (inf)	mem 26443MB
+[2021-09-22 22:28:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][850/1251]	eta 0:08:03 lr 0.000001	time 1.1963 (1.2052)	loss 565.2328 (556.9453)	attn_loss 555.3057 (546.1932)	hidden_loss 9.9271 (10.7520)	grad_norm 640.6538 (inf)	mem 26443MB
+[2021-09-22 22:28:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][860/1251]	eta 0:07:51 lr 0.000001	time 1.2020 (1.2052)	loss 563.7681 (556.7729)	attn_loss 553.1713 (546.0252)	hidden_loss 10.5968 (10.7477)	grad_norm 633.8434 (inf)	mem 26443MB
+[2021-09-22 22:29:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][870/1251]	eta 0:07:39 lr 0.000001	time 1.1950 (1.2051)	loss 560.0696 (556.6714)	attn_loss 550.2009 (545.9296)	hidden_loss 9.8687 (10.7419)	grad_norm 640.9293 (inf)	mem 26443MB
+[2021-09-22 22:29:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][880/1251]	eta 0:07:27 lr 0.000001	time 1.1978 (1.2050)	loss 568.9922 (556.6341)	attn_loss 559.0306 (545.8981)	hidden_loss 9.9616 (10.7360)	grad_norm 631.4656 (inf)	mem 26443MB
+[2021-09-22 22:29:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][890/1251]	eta 0:07:14 lr 0.000001	time 1.1788 (1.2049)	loss 537.6609 (556.5204)	attn_loss 527.4724 (545.7898)	hidden_loss 10.1885 (10.7307)	grad_norm 636.1864 (inf)	mem 26443MB
+[2021-09-22 22:29:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][900/1251]	eta 0:07:02 lr 0.000001	time 1.2037 (1.2049)	loss 527.9785 (556.4098)	attn_loss 517.5046 (545.6837)	hidden_loss 10.4739 (10.7261)	grad_norm 637.9216 (inf)	mem 26443MB
+[2021-09-22 22:29:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][910/1251]	eta 0:06:50 lr 0.000001	time 1.2068 (1.2048)	loss 556.1976 (556.3330)	attn_loss 545.6182 (545.6112)	hidden_loss 10.5795 (10.7217)	grad_norm 637.4197 (inf)	mem 26443MB
+[2021-09-22 22:30:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][920/1251]	eta 0:06:38 lr 0.000001	time 1.1978 (1.2048)	loss 556.7500 (556.3396)	attn_loss 546.6850 (545.6250)	hidden_loss 10.0650 (10.7145)	grad_norm 639.7534 (inf)	mem 26443MB
+[2021-09-22 22:30:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][930/1251]	eta 0:06:26 lr 0.000001	time 1.1963 (1.2047)	loss 516.3962 (556.1347)	attn_loss 505.8518 (545.4245)	hidden_loss 10.5444 (10.7102)	grad_norm 629.1285 (inf)	mem 26443MB
+[2021-09-22 22:30:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][940/1251]	eta 0:06:14 lr 0.000001	time 1.1806 (1.2046)	loss 542.5385 (556.0068)	attn_loss 531.8420 (545.3009)	hidden_loss 10.6965 (10.7058)	grad_norm 640.0774 (inf)	mem 26443MB
+[2021-09-22 22:30:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][950/1251]	eta 0:06:02 lr 0.000001	time 1.2035 (1.2046)	loss 528.4293 (555.9047)	attn_loss 517.7861 (545.2010)	hidden_loss 10.6431 (10.7036)	grad_norm 636.9374 (inf)	mem 26443MB
+[2021-09-22 22:30:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][960/1251]	eta 0:05:50 lr 0.000001	time 1.2182 (1.2045)	loss 570.9528 (555.8955)	attn_loss 561.1072 (545.1971)	hidden_loss 9.8456 (10.6984)	grad_norm 633.6926 (inf)	mem 26443MB
+[2021-09-22 22:31:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][970/1251]	eta 0:05:38 lr 0.000001	time 1.1944 (1.2044)	loss 555.8472 (555.8055)	attn_loss 545.2988 (545.1103)	hidden_loss 10.5484 (10.6952)	grad_norm 632.7302 (inf)	mem 26443MB
+[2021-09-22 22:31:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][980/1251]	eta 0:05:26 lr 0.000001	time 1.1921 (1.2044)	loss 556.8145 (555.8065)	attn_loss 546.1991 (545.1165)	hidden_loss 10.6154 (10.6900)	grad_norm 637.8807 (inf)	mem 26443MB
+[2021-09-22 22:31:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][990/1251]	eta 0:05:14 lr 0.000001	time 1.1948 (1.2043)	loss 529.7218 (555.6560)	attn_loss 519.3593 (544.9703)	hidden_loss 10.3626 (10.6856)	grad_norm 631.5475 (inf)	mem 26443MB
+[2021-09-22 22:31:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1000/1251]	eta 0:05:02 lr 0.000001	time 1.2095 (1.2042)	loss 565.6541 (555.6389)	attn_loss 556.0027 (544.9577)	hidden_loss 9.6513 (10.6812)	grad_norm 635.8896 (inf)	mem 26443MB
+[2021-09-22 22:31:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1010/1251]	eta 0:04:50 lr 0.000001	time 1.2007 (1.2041)	loss 528.0620 (555.5875)	attn_loss 517.5560 (544.9102)	hidden_loss 10.5059 (10.6774)	grad_norm 634.1471 (inf)	mem 26443MB
+[2021-09-22 22:32:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1020/1251]	eta 0:04:38 lr 0.000001	time 1.2080 (1.2040)	loss 564.1669 (555.5756)	attn_loss 554.5004 (544.9036)	hidden_loss 9.6665 (10.6719)	grad_norm 637.8854 (inf)	mem 26443MB
+[2021-09-22 22:32:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1030/1251]	eta 0:04:26 lr 0.000001	time 1.2007 (1.2040)	loss 569.0509 (555.4763)	attn_loss 558.6156 (544.8090)	hidden_loss 10.4353 (10.6674)	grad_norm 635.3433 (inf)	mem 26443MB
+[2021-09-22 22:32:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1040/1251]	eta 0:04:14 lr 0.000001	time 1.1944 (1.2040)	loss 558.2120 (555.5244)	attn_loss 548.3491 (544.8625)	hidden_loss 9.8629 (10.6619)	grad_norm 632.6325 (inf)	mem 26443MB
+[2021-09-22 22:32:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1050/1251]	eta 0:04:01 lr 0.000001	time 1.2101 (1.2039)	loss 552.6378 (555.4263)	attn_loss 542.0986 (544.7664)	hidden_loss 10.5392 (10.6598)	grad_norm 629.0928 (inf)	mem 26443MB
+[2021-09-22 22:32:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1060/1251]	eta 0:03:49 lr 0.000001	time 1.1925 (1.2039)	loss 541.9280 (555.3678)	attn_loss 531.5297 (544.7112)	hidden_loss 10.3984 (10.6566)	grad_norm 635.8969 (inf)	mem 26443MB
+[2021-09-22 22:33:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1070/1251]	eta 0:03:37 lr 0.000001	time 1.1931 (1.2039)	loss 530.5106 (555.2737)	attn_loss 520.1550 (544.6213)	hidden_loss 10.3557 (10.6523)	grad_norm 633.5736 (inf)	mem 26443MB
+[2021-09-22 22:33:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1080/1251]	eta 0:03:25 lr 0.000001	time 1.2031 (1.2038)	loss 564.1682 (555.1642)	attn_loss 554.5522 (544.5172)	hidden_loss 9.6160 (10.6470)	grad_norm 635.0999 (inf)	mem 26443MB
+[2021-09-22 22:33:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1090/1251]	eta 0:03:13 lr 0.000001	time 1.2023 (1.2038)	loss 528.5624 (555.0985)	attn_loss 518.0878 (544.4555)	hidden_loss 10.4746 (10.6430)	grad_norm 629.9067 (inf)	mem 26443MB
+[2021-09-22 22:33:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1100/1251]	eta 0:03:01 lr 0.000001	time 1.1949 (1.2037)	loss 552.1987 (555.0183)	attn_loss 542.3511 (544.3790)	hidden_loss 9.8476 (10.6393)	grad_norm 626.5143 (inf)	mem 26443MB
+[2021-09-22 22:33:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1110/1251]	eta 0:02:49 lr 0.000001	time 1.1947 (1.2036)	loss 556.2244 (554.9646)	attn_loss 546.0181 (544.3288)	hidden_loss 10.2063 (10.6358)	grad_norm 631.0659 (inf)	mem 26443MB
+[2021-09-22 22:34:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1120/1251]	eta 0:02:37 lr 0.000001	time 1.2021 (1.2035)	loss 563.7842 (554.8909)	attn_loss 553.5497 (544.2589)	hidden_loss 10.2346 (10.6320)	grad_norm 628.3891 (inf)	mem 26443MB
+[2021-09-22 22:34:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1130/1251]	eta 0:02:25 lr 0.000001	time 1.2095 (1.2035)	loss 524.9795 (554.8086)	attn_loss 514.6571 (544.1814)	hidden_loss 10.3224 (10.6271)	grad_norm 634.4012 (inf)	mem 26443MB
+[2021-09-22 22:34:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1140/1251]	eta 0:02:13 lr 0.000001	time 1.1993 (1.2034)	loss 536.8451 (554.7283)	attn_loss 526.2341 (544.1042)	hidden_loss 10.6110 (10.6241)	grad_norm 632.4724 (inf)	mem 26443MB
+[2021-09-22 22:34:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1150/1251]	eta 0:02:01 lr 0.000001	time 1.2002 (1.2033)	loss 553.0256 (554.6225)	attn_loss 542.8893 (544.0017)	hidden_loss 10.1363 (10.6208)	grad_norm 629.1404 (inf)	mem 26443MB
+[2021-09-22 22:34:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1160/1251]	eta 0:01:49 lr 0.000001	time 1.1998 (1.2033)	loss 554.1212 (554.5560)	attn_loss 543.9441 (543.9391)	hidden_loss 10.1771 (10.6169)	grad_norm 632.3434 (inf)	mem 26443MB
+[2021-09-22 22:35:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1170/1251]	eta 0:01:37 lr 0.000001	time 1.1968 (1.2032)	loss 553.0935 (554.5170)	attn_loss 542.8442 (543.9025)	hidden_loss 10.2493 (10.6145)	grad_norm 635.1868 (inf)	mem 26443MB
+[2021-09-22 22:35:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1180/1251]	eta 0:01:25 lr 0.000001	time 1.1813 (1.2032)	loss 542.4605 (554.4769)	attn_loss 531.7229 (543.8664)	hidden_loss 10.7376 (10.6105)	grad_norm 630.8973 (inf)	mem 26443MB
+[2021-09-22 22:35:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1190/1251]	eta 0:01:13 lr 0.000001	time 1.2083 (1.2032)	loss 534.4496 (554.3683)	attn_loss 523.9092 (543.7619)	hidden_loss 10.5404 (10.6064)	grad_norm 633.0811 (inf)	mem 26443MB
+[2021-09-22 22:35:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1200/1251]	eta 0:01:01 lr 0.000001	time 1.2076 (1.2031)	loss 561.2585 (554.3222)	attn_loss 551.6669 (543.7209)	hidden_loss 9.5917 (10.6014)	grad_norm 631.6697 (inf)	mem 26443MB
+[2021-09-22 22:35:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1210/1251]	eta 0:00:49 lr 0.000001	time 1.1960 (1.2031)	loss 555.4462 (554.2551)	attn_loss 544.8866 (543.6570)	hidden_loss 10.5596 (10.5981)	grad_norm 630.2584 (inf)	mem 26443MB
+[2021-09-22 22:36:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1220/1251]	eta 0:00:37 lr 0.000001	time 1.1947 (1.2030)	loss 553.6958 (554.1634)	attn_loss 543.2273 (543.5690)	hidden_loss 10.4685 (10.5944)	grad_norm 640.3469 (inf)	mem 26443MB
+[2021-09-22 22:36:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1230/1251]	eta 0:00:25 lr 0.000001	time 1.2060 (1.2030)	loss 550.8346 (554.0860)	attn_loss 540.6422 (543.4943)	hidden_loss 10.1924 (10.5916)	grad_norm 635.3138 (inf)	mem 26443MB
+[2021-09-22 22:36:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1240/1251]	eta 0:00:13 lr 0.000001	time 1.1887 (1.2029)	loss 530.0916 (553.9649)	attn_loss 519.7276 (543.3772)	hidden_loss 10.3639 (10.5877)	grad_norm 633.5999 (inf)	mem 26443MB
+[2021-09-22 22:36:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [1/4][1250/1251]	eta 0:00:01 lr 0.000001	time 1.1874 (1.2028)	loss 552.8623 (553.8918)	attn_loss 542.3972 (543.3068)	hidden_loss 10.4651 (10.5850)	grad_norm 627.2454 (inf)	mem 26443MB
+[2021-09-22 22:36:37 swin_tiny_patch4_window7_224] (main.py 369): INFO EPOCH 1 training takes 0:25:05
+[2021-09-22 22:36:37 swin_tiny_patch4_window7_224] (utils.py 63): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_1.pth saving......
+[2021-09-22 22:36:38 swin_tiny_patch4_window7_224] (utils.py 65): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_1.pth saved !!!
+[2021-09-22 22:36:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][0/1251]	eta 2:26:00 lr 0.000001	time 7.0026 (7.0026)	loss 555.2675 (555.2675)	attn_loss 545.4478 (545.4478)	hidden_loss 9.8197 (9.8197)	grad_norm 630.4557 (630.4557)	mem 26443MB
+[2021-09-22 22:36:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][10/1251]	eta 0:36:05 lr 0.000001	time 1.1984 (1.7449)	loss 552.8727 (550.9156)	attn_loss 541.9952 (540.8691)	hidden_loss 10.8775 (10.0465)	grad_norm 627.4792 (632.4963)	mem 26443MB
+[2021-09-22 22:37:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][20/1251]	eta 0:30:28 lr 0.000001	time 1.1903 (1.4854)	loss 548.2635 (544.5928)	attn_loss 538.0842 (534.4614)	hidden_loss 10.1793 (10.1314)	grad_norm 631.6566 (632.4532)	mem 26443MB
+[2021-09-22 22:37:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][30/1251]	eta 0:28:21 lr 0.000001	time 1.2197 (1.3934)	loss 554.6159 (543.2218)	attn_loss 544.5301 (533.0619)	hidden_loss 10.0858 (10.1600)	grad_norm 630.5684 (632.5258)	mem 26443MB
+[2021-09-22 22:37:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][40/1251]	eta 0:27:09 lr 0.000001	time 1.1987 (1.3454)	loss 557.8203 (544.8572)	attn_loss 547.9139 (534.7203)	hidden_loss 9.9064 (10.1369)	grad_norm 629.9407 (633.1934)	mem 26443MB
+[2021-09-22 22:37:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][50/1251]	eta 0:26:19 lr 0.000001	time 1.1852 (1.3154)	loss 525.2416 (543.7264)	attn_loss 515.2048 (533.5773)	hidden_loss 10.0368 (10.1491)	grad_norm 630.7685 (633.5896)	mem 26443MB
+[2021-09-22 22:37:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][60/1251]	eta 0:25:43 lr 0.000001	time 1.1990 (1.2957)	loss 535.6986 (542.6149)	attn_loss 525.2890 (532.4758)	hidden_loss 10.4096 (10.1390)	grad_norm 635.0471 (633.3394)	mem 26443MB
+[2021-09-22 22:38:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][70/1251]	eta 0:25:14 lr 0.000001	time 1.2134 (1.2826)	loss 549.8297 (542.4604)	attn_loss 540.0159 (532.3316)	hidden_loss 9.8137 (10.1287)	grad_norm 635.6402 (633.7819)	mem 26443MB
+[2021-09-22 22:38:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][80/1251]	eta 0:24:49 lr 0.000001	time 1.1975 (1.2722)	loss 548.6589 (541.7145)	attn_loss 538.2651 (531.5542)	hidden_loss 10.3938 (10.1603)	grad_norm 627.8253 (633.7739)	mem 26443MB
+[2021-09-22 22:38:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][90/1251]	eta 0:24:27 lr 0.000001	time 1.1836 (1.2638)	loss 556.3358 (542.1519)	attn_loss 546.5096 (531.9954)	hidden_loss 9.8262 (10.1565)	grad_norm 631.5241 (633.4571)	mem 26443MB
+[2021-09-22 22:38:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][100/1251]	eta 0:24:06 lr 0.000001	time 1.2027 (1.2571)	loss 555.9871 (542.6215)	attn_loss 546.1050 (532.4772)	hidden_loss 9.8820 (10.1443)	grad_norm 636.8989 (633.4467)	mem 26443MB
+[2021-09-22 22:38:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][110/1251]	eta 0:23:48 lr 0.000001	time 1.2241 (1.2521)	loss 545.1969 (542.8550)	attn_loss 534.8723 (532.7069)	hidden_loss 10.3246 (10.1481)	grad_norm 625.7778 (633.4103)	mem 26443MB
+[2021-09-22 22:39:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][120/1251]	eta 0:23:31 lr 0.000001	time 1.1914 (1.2481)	loss 514.4553 (542.0899)	attn_loss 503.9872 (531.9391)	hidden_loss 10.4680 (10.1507)	grad_norm 626.8853 (633.1127)	mem 26443MB
+[2021-09-22 22:39:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][130/1251]	eta 0:23:14 lr 0.000001	time 1.1866 (1.2442)	loss 557.2918 (542.0454)	attn_loss 547.7174 (531.8928)	hidden_loss 9.5744 (10.1526)	grad_norm 642.8679 (633.2390)	mem 26443MB
+[2021-09-22 22:39:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][140/1251]	eta 0:22:58 lr 0.000001	time 1.1846 (1.2410)	loss 541.5256 (542.0749)	attn_loss 531.0156 (531.9328)	hidden_loss 10.5099 (10.1421)	grad_norm 639.0137 (633.1388)	mem 26443MB
+[2021-09-22 22:39:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][150/1251]	eta 0:22:43 lr 0.000001	time 1.2099 (1.2380)	loss 543.6175 (542.6386)	attn_loss 533.3232 (532.4991)	hidden_loss 10.2943 (10.1396)	grad_norm 636.1030 (633.3120)	mem 26443MB
+[2021-09-22 22:39:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][160/1251]	eta 0:22:27 lr 0.000001	time 1.1990 (1.2353)	loss 556.1434 (541.9781)	attn_loss 546.3873 (531.8345)	hidden_loss 9.7561 (10.1437)	grad_norm 642.3262 (633.0931)	mem 26443MB
+[2021-09-22 22:40:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][170/1251]	eta 0:22:13 lr 0.000001	time 1.1946 (1.2332)	loss 523.3420 (541.1094)	attn_loss 512.9371 (530.9618)	hidden_loss 10.4049 (10.1477)	grad_norm 628.4008 (633.0096)	mem 26443MB
+[2021-09-22 22:40:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][180/1251]	eta 0:21:58 lr 0.000001	time 1.1867 (1.2311)	loss 531.7058 (541.0189)	attn_loss 521.1567 (530.8754)	hidden_loss 10.5491 (10.1435)	grad_norm 629.9785 (633.1564)	mem 26443MB
+[2021-09-22 22:40:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][190/1251]	eta 0:21:44 lr 0.000001	time 1.1886 (1.2293)	loss 548.9886 (541.0564)	attn_loss 538.8950 (530.9156)	hidden_loss 10.0937 (10.1408)	grad_norm 618.3500 (633.0460)	mem 26443MB
+[2021-09-22 22:40:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][200/1251]	eta 0:21:30 lr 0.000001	time 1.2010 (1.2277)	loss 520.2682 (540.6426)	attn_loss 509.9938 (530.5006)	hidden_loss 10.2745 (10.1420)	grad_norm 637.2329 (633.0494)	mem 26443MB
+[2021-09-22 22:40:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][210/1251]	eta 0:21:16 lr 0.000001	time 1.1965 (1.2263)	loss 550.8951 (540.8087)	attn_loss 540.9075 (530.6753)	hidden_loss 9.9875 (10.1334)	grad_norm 637.6365 (633.1921)	mem 26443MB
+[2021-09-22 22:41:09 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][220/1251]	eta 0:21:02 lr 0.000001	time 1.1924 (1.2250)	loss 517.3790 (540.4243)	attn_loss 507.5997 (530.2905)	hidden_loss 9.7793 (10.1338)	grad_norm 631.4556 (633.1674)	mem 26443MB
+[2021-09-22 22:41:21 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][230/1251]	eta 0:20:49 lr 0.000001	time 1.2143 (1.2238)	loss 556.7856 (540.8738)	attn_loss 547.0784 (530.7507)	hidden_loss 9.7072 (10.1231)	grad_norm 633.7875 (633.3093)	mem 26443MB
+[2021-09-22 22:41:33 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][240/1251]	eta 0:20:36 lr 0.000001	time 1.2085 (1.2226)	loss 513.4552 (540.7881)	attn_loss 503.0699 (530.6597)	hidden_loss 10.3853 (10.1284)	grad_norm 632.5677 (633.3834)	mem 26443MB
+[2021-09-22 22:41:45 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][250/1251]	eta 0:20:22 lr 0.000001	time 1.1858 (1.2215)	loss 559.7730 (540.7051)	attn_loss 549.3087 (530.5781)	hidden_loss 10.4643 (10.1270)	grad_norm 633.7190 (633.3248)	mem 26443MB
+[2021-09-22 22:41:57 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][260/1251]	eta 0:20:09 lr 0.000001	time 1.1947 (1.2205)	loss 562.5382 (541.1329)	attn_loss 552.6869 (531.0078)	hidden_loss 9.8513 (10.1251)	grad_norm 636.1730 (633.3378)	mem 26443MB
+[2021-09-22 22:42:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][270/1251]	eta 0:19:56 lr 0.000001	time 1.1953 (1.2196)	loss 553.3710 (540.7580)	attn_loss 543.4274 (530.6341)	hidden_loss 9.9436 (10.1239)	grad_norm 632.7512 (633.2831)	mem 26443MB
+[2021-09-22 22:42:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][280/1251]	eta 0:19:43 lr 0.000001	time 1.1769 (1.2187)	loss 559.1959 (540.7539)	attn_loss 549.4945 (530.6307)	hidden_loss 9.7014 (10.1232)	grad_norm 625.7812 (633.2355)	mem 26443MB
+[2021-09-22 22:42:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][290/1251]	eta 0:19:30 lr 0.000001	time 1.1914 (1.2179)	loss 564.3112 (540.9698)	attn_loss 554.0178 (530.8444)	hidden_loss 10.2934 (10.1254)	grad_norm 635.3366 (633.2353)	mem 26443MB
+[2021-09-22 22:42:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][300/1251]	eta 0:19:17 lr 0.000001	time 1.1841 (1.2171)	loss 513.2509 (540.6727)	attn_loss 502.9795 (530.5437)	hidden_loss 10.2714 (10.1290)	grad_norm 625.7491 (633.2099)	mem 26443MB
+[2021-09-22 22:42:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][310/1251]	eta 0:19:04 lr 0.000001	time 1.2230 (1.2165)	loss 514.4152 (540.8058)	attn_loss 504.0938 (530.6756)	hidden_loss 10.3213 (10.1302)	grad_norm 624.0429 (633.2612)	mem 26443MB
+[2021-09-22 22:43:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][320/1251]	eta 0:18:52 lr 0.000001	time 1.1955 (1.2160)	loss 538.1201 (541.0640)	attn_loss 527.8118 (530.9369)	hidden_loss 10.3083 (10.1272)	grad_norm 637.5961 (633.3303)	mem 26443MB
+[2021-09-22 22:43:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][330/1251]	eta 0:18:39 lr 0.000001	time 1.1933 (1.2155)	loss 555.1732 (541.1376)	attn_loss 545.4073 (531.0128)	hidden_loss 9.7659 (10.1248)	grad_norm 632.1332 (633.2742)	mem 26443MB
+[2021-09-22 22:43:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][340/1251]	eta 0:18:26 lr 0.000001	time 1.2188 (1.2150)	loss 545.7975 (541.2008)	attn_loss 535.6620 (531.0748)	hidden_loss 10.1356 (10.1259)	grad_norm 634.4562 (633.2538)	mem 26443MB
+[2021-09-22 22:43:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][350/1251]	eta 0:18:14 lr 0.000001	time 1.1956 (1.2145)	loss 512.5491 (540.9650)	attn_loss 502.1866 (530.8364)	hidden_loss 10.3625 (10.1286)	grad_norm 634.9294 (633.2233)	mem 26443MB
+[2021-09-22 22:43:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][360/1251]	eta 0:18:01 lr 0.000001	time 1.2080 (1.2141)	loss 544.7598 (541.1485)	attn_loss 534.7610 (531.0191)	hidden_loss 9.9988 (10.1295)	grad_norm 622.0289 (633.2791)	mem 26443MB
+[2021-09-22 22:44:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][370/1251]	eta 0:17:49 lr 0.000001	time 1.2249 (1.2136)	loss 518.7744 (540.9425)	attn_loss 508.7330 (530.8165)	hidden_loss 10.0414 (10.1260)	grad_norm 637.3819 (633.1699)	mem 26443MB
+[2021-09-22 22:44:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][380/1251]	eta 0:17:36 lr 0.000001	time 1.1942 (1.2131)	loss 552.1918 (540.7998)	attn_loss 542.3156 (530.6733)	hidden_loss 9.8762 (10.1265)	grad_norm 636.1839 (633.1503)	mem 26443MB
+[2021-09-22 22:44:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][390/1251]	eta 0:17:24 lr 0.000001	time 1.1967 (1.2128)	loss 521.3316 (540.7027)	attn_loss 510.9852 (530.5755)	hidden_loss 10.3464 (10.1273)	grad_norm 628.7502 (633.1460)	mem 26443MB
+[2021-09-22 22:44:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][400/1251]	eta 0:17:11 lr 0.000001	time 1.1836 (1.2125)	loss 541.5403 (540.6023)	attn_loss 531.2802 (530.4746)	hidden_loss 10.2602 (10.1277)	grad_norm 637.6934 (633.1374)	mem 26443MB
+[2021-09-22 22:44:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][410/1251]	eta 0:16:59 lr 0.000001	time 1.1842 (1.2121)	loss 553.7812 (540.5678)	attn_loss 544.3029 (530.4418)	hidden_loss 9.4784 (10.1259)	grad_norm 635.8328 (633.1028)	mem 26443MB
+[2021-09-22 22:45:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][420/1251]	eta 0:16:47 lr 0.000001	time 1.2134 (1.2118)	loss 546.8094 (540.4374)	attn_loss 537.0638 (530.3120)	hidden_loss 9.7455 (10.1254)	grad_norm 631.4078 (633.0850)	mem 26443MB
+[2021-09-22 22:45:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][430/1251]	eta 0:16:34 lr 0.000001	time 1.1995 (1.2116)	loss 556.3480 (540.4422)	attn_loss 546.5781 (530.3224)	hidden_loss 9.7698 (10.1198)	grad_norm 645.0175 (633.0903)	mem 26443MB
+[2021-09-22 22:45:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][440/1251]	eta 0:16:22 lr 0.000001	time 1.1891 (1.2113)	loss 544.3018 (540.4424)	attn_loss 534.2026 (530.3252)	hidden_loss 10.0992 (10.1172)	grad_norm 641.1565 (633.0630)	mem 26443MB
+[2021-09-22 22:45:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][450/1251]	eta 0:16:10 lr 0.000001	time 1.1877 (1.2112)	loss 548.0803 (540.5589)	attn_loss 538.2566 (530.4412)	hidden_loss 9.8236 (10.1176)	grad_norm 631.3378 (633.0829)	mem 26443MB
+[2021-09-22 22:45:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][460/1251]	eta 0:15:57 lr 0.000001	time 1.1919 (1.2109)	loss 531.4332 (540.6519)	attn_loss 520.9204 (530.5354)	hidden_loss 10.5128 (10.1165)	grad_norm 627.7414 (633.0907)	mem 26443MB
+[2021-09-22 22:46:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][470/1251]	eta 0:15:45 lr 0.000001	time 1.2069 (1.2106)	loss 547.0463 (540.5699)	attn_loss 537.4103 (530.4546)	hidden_loss 9.6360 (10.1153)	grad_norm 641.1353 (633.0648)	mem 26443MB
+[2021-09-22 22:46:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][480/1251]	eta 0:15:33 lr 0.000001	time 1.2002 (1.2103)	loss 548.5970 (540.4073)	attn_loss 538.8674 (530.2896)	hidden_loss 9.7297 (10.1178)	grad_norm 643.7792 (633.1031)	mem 26443MB
+[2021-09-22 22:46:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][490/1251]	eta 0:15:20 lr 0.000001	time 1.1953 (1.2100)	loss 551.9214 (540.2921)	attn_loss 542.2009 (530.1746)	hidden_loss 9.7206 (10.1175)	grad_norm 629.8942 (633.1088)	mem 26443MB
+[2021-09-22 22:46:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][500/1251]	eta 0:15:08 lr 0.000001	time 1.1889 (1.2098)	loss 510.0742 (540.2371)	attn_loss 499.7530 (530.1229)	hidden_loss 10.3212 (10.1143)	grad_norm 617.4968 (633.0632)	mem 26443MB
+[2021-09-22 22:46:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][510/1251]	eta 0:14:56 lr 0.000001	time 1.2194 (1.2096)	loss 517.2604 (540.1444)	attn_loss 506.9397 (530.0312)	hidden_loss 10.3208 (10.1132)	grad_norm 627.8571 (633.0485)	mem 26443MB
+[2021-09-22 22:47:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][520/1251]	eta 0:14:44 lr 0.000001	time 1.2318 (1.2094)	loss 519.1176 (540.1308)	attn_loss 508.8643 (530.0188)	hidden_loss 10.2532 (10.1121)	grad_norm 631.9651 (633.0590)	mem 26443MB
+[2021-09-22 22:47:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][530/1251]	eta 0:14:31 lr 0.000001	time 1.2168 (1.2092)	loss 554.2296 (540.1829)	attn_loss 544.5544 (530.0734)	hidden_loss 9.6751 (10.1095)	grad_norm 637.5054 (633.0129)	mem 26443MB
+[2021-09-22 22:47:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][540/1251]	eta 0:14:19 lr 0.000001	time 1.1998 (1.2090)	loss 539.9432 (540.0629)	attn_loss 529.9478 (529.9555)	hidden_loss 9.9954 (10.1075)	grad_norm 637.2144 (632.9682)	mem 26443MB
+[2021-09-22 22:47:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][550/1251]	eta 0:14:07 lr 0.000001	time 1.2073 (1.2088)	loss 545.4919 (539.8830)	attn_loss 535.1226 (529.7748)	hidden_loss 10.3694 (10.1082)	grad_norm 640.9362 (632.9645)	mem 26443MB
+[2021-09-22 22:47:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][560/1251]	eta 0:13:55 lr 0.000001	time 1.1851 (1.2086)	loss 547.8513 (539.7773)	attn_loss 537.8031 (529.6696)	hidden_loss 10.0482 (10.1077)	grad_norm 629.7499 (632.9617)	mem 26443MB
+[2021-09-22 22:48:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][570/1251]	eta 0:13:42 lr 0.000001	time 1.1821 (1.2084)	loss 540.9165 (539.6714)	attn_loss 530.7498 (529.5645)	hidden_loss 10.1667 (10.1069)	grad_norm 644.8584 (632.9611)	mem 26443MB
+[2021-09-22 22:48:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][580/1251]	eta 0:13:30 lr 0.000001	time 1.1958 (1.2083)	loss 542.4527 (539.6617)	attn_loss 532.3431 (529.5519)	hidden_loss 10.1096 (10.1098)	grad_norm 622.7648 (632.9545)	mem 26443MB
+[2021-09-22 22:48:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][590/1251]	eta 0:13:18 lr 0.000001	time 1.1914 (1.2080)	loss 506.2041 (539.4962)	attn_loss 495.9716 (529.3876)	hidden_loss 10.2325 (10.1086)	grad_norm 635.0209 (632.9164)	mem 26443MB
+[2021-09-22 22:48:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][600/1251]	eta 0:13:06 lr 0.000001	time 1.2017 (1.2079)	loss 523.6935 (539.3654)	attn_loss 513.3190 (529.2581)	hidden_loss 10.3745 (10.1072)	grad_norm 638.4792 (632.9502)	mem 26443MB
+[2021-09-22 22:48:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][610/1251]	eta 0:12:54 lr 0.000001	time 1.1830 (1.2077)	loss 539.2366 (539.2733)	attn_loss 529.0674 (529.1654)	hidden_loss 10.1692 (10.1079)	grad_norm 636.6298 (632.9658)	mem 26443MB
+[2021-09-22 22:49:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][620/1251]	eta 0:12:41 lr 0.000001	time 1.1910 (1.2075)	loss 542.5204 (539.2859)	attn_loss 532.6823 (529.1797)	hidden_loss 9.8382 (10.1062)	grad_norm 626.5293 (632.9807)	mem 26443MB
+[2021-09-22 22:49:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][630/1251]	eta 0:12:29 lr 0.000001	time 1.2050 (1.2073)	loss 550.8515 (539.3394)	attn_loss 541.1738 (529.2350)	hidden_loss 9.6776 (10.1043)	grad_norm 635.0302 (632.9843)	mem 26443MB
+[2021-09-22 22:49:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][640/1251]	eta 0:12:17 lr 0.000001	time 1.1922 (1.2071)	loss 549.5667 (539.2937)	attn_loss 539.9148 (529.1881)	hidden_loss 9.6519 (10.1056)	grad_norm 631.6769 (632.9697)	mem 26443MB
+[2021-09-22 22:49:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][650/1251]	eta 0:12:05 lr 0.000001	time 1.1865 (1.2069)	loss 505.9549 (539.2444)	attn_loss 495.6602 (529.1409)	hidden_loss 10.2947 (10.1035)	grad_norm 630.9443 (632.9412)	mem 26443MB
+[2021-09-22 22:49:56 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][660/1251]	eta 0:11:53 lr 0.000001	time 1.1789 (1.2067)	loss 546.2966 (539.3118)	attn_loss 536.7010 (529.2110)	hidden_loss 9.5956 (10.1008)	grad_norm 632.1949 (632.9887)	mem 26443MB
+[2021-09-22 22:50:08 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][670/1251]	eta 0:11:41 lr 0.000001	time 1.1832 (1.2067)	loss 549.4826 (539.1936)	attn_loss 539.9938 (529.0946)	hidden_loss 9.4888 (10.0990)	grad_norm 640.0551 (633.0284)	mem 26443MB
+[2021-09-22 22:50:20 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][680/1251]	eta 0:11:28 lr 0.000001	time 1.1937 (1.2065)	loss 532.0735 (539.0464)	attn_loss 521.5807 (528.9473)	hidden_loss 10.4929 (10.0991)	grad_norm 634.8104 (633.0295)	mem 26443MB
+[2021-09-22 22:50:32 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][690/1251]	eta 0:11:16 lr 0.000001	time 1.1868 (1.2063)	loss 549.0814 (539.0618)	attn_loss 539.5070 (528.9649)	hidden_loss 9.5744 (10.0970)	grad_norm 640.1027 (633.0289)	mem 26443MB
+[2021-09-22 22:50:44 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][700/1251]	eta 0:11:04 lr 0.000001	time 1.1972 (1.2062)	loss 545.8110 (538.9222)	attn_loss 536.2340 (528.8268)	hidden_loss 9.5770 (10.0954)	grad_norm 630.3840 (633.0184)	mem 26443MB
+[2021-09-22 22:50:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][710/1251]	eta 0:10:52 lr 0.000001	time 1.1861 (1.2060)	loss 547.0840 (538.9088)	attn_loss 537.3189 (528.8172)	hidden_loss 9.7652 (10.0916)	grad_norm 631.3229 (632.9709)	mem 26443MB
+[2021-09-22 22:51:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][720/1251]	eta 0:10:40 lr 0.000001	time 1.1862 (1.2059)	loss 538.0245 (538.9191)	attn_loss 528.4208 (528.8291)	hidden_loss 9.6037 (10.0900)	grad_norm 644.1530 (632.9576)	mem 26443MB
+[2021-09-22 22:51:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][730/1251]	eta 0:10:28 lr 0.000001	time 1.1922 (1.2058)	loss 506.3793 (538.7623)	attn_loss 496.0463 (528.6744)	hidden_loss 10.3330 (10.0879)	grad_norm 629.2909 (632.9348)	mem 26443MB
+[2021-09-22 22:51:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][740/1251]	eta 0:10:16 lr 0.000001	time 1.1906 (1.2056)	loss 547.7672 (538.6143)	attn_loss 537.8546 (528.5277)	hidden_loss 9.9126 (10.0866)	grad_norm 631.1027 (632.9350)	mem 26443MB
+[2021-09-22 22:51:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][750/1251]	eta 0:10:03 lr 0.000001	time 1.1811 (1.2056)	loss 547.6494 (538.6741)	attn_loss 537.4674 (528.5901)	hidden_loss 10.1820 (10.0840)	grad_norm 641.6248 (632.9503)	mem 26443MB
+[2021-09-22 22:51:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][760/1251]	eta 0:09:51 lr 0.000001	time 1.1951 (1.2054)	loss 549.9328 (538.6292)	attn_loss 540.1501 (528.5477)	hidden_loss 9.7827 (10.0814)	grad_norm 634.7304 (632.9321)	mem 26443MB
+[2021-09-22 22:52:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][770/1251]	eta 0:09:39 lr 0.000001	time 1.1969 (1.2053)	loss 513.0410 (538.5768)	attn_loss 502.8869 (528.4974)	hidden_loss 10.1541 (10.0794)	grad_norm 631.6111 (632.9545)	mem 26443MB
+[2021-09-22 22:52:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][780/1251]	eta 0:09:27 lr 0.000001	time 1.2066 (1.2052)	loss 547.4401 (538.5069)	attn_loss 537.7488 (528.4284)	hidden_loss 9.6913 (10.0785)	grad_norm 638.9509 (632.9703)	mem 26443MB
+[2021-09-22 22:52:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][790/1251]	eta 0:09:15 lr 0.000001	time 1.1960 (1.2051)	loss 497.5021 (538.4924)	attn_loss 487.3776 (528.4164)	hidden_loss 10.1246 (10.0760)	grad_norm 631.6850 (632.9465)	mem 26443MB
+[2021-09-22 22:52:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][800/1251]	eta 0:09:03 lr 0.000001	time 1.1885 (1.2050)	loss 547.1206 (538.4795)	attn_loss 537.5504 (528.4052)	hidden_loss 9.5702 (10.0743)	grad_norm 636.4044 (632.9608)	mem 26443MB
+[2021-09-22 22:52:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][810/1251]	eta 0:08:51 lr 0.000001	time 1.1892 (1.2049)	loss 557.9879 (538.4561)	attn_loss 547.7142 (528.3833)	hidden_loss 10.2737 (10.0728)	grad_norm 638.0639 (632.9777)	mem 26443MB
+[2021-09-22 22:53:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][820/1251]	eta 0:08:39 lr 0.000001	time 1.1976 (1.2048)	loss 533.0289 (538.3891)	attn_loss 523.0145 (528.3188)	hidden_loss 10.0145 (10.0704)	grad_norm 623.0419 (632.9476)	mem 26443MB
+[2021-09-22 22:53:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][830/1251]	eta 0:08:27 lr 0.000001	time 1.1992 (1.2047)	loss 522.9078 (538.2620)	attn_loss 512.5081 (528.1910)	hidden_loss 10.3998 (10.0710)	grad_norm 635.5759 (632.9388)	mem 26443MB
+[2021-09-22 22:53:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][840/1251]	eta 0:08:15 lr 0.000001	time 1.1956 (1.2046)	loss 562.2291 (538.3004)	attn_loss 551.9186 (528.2287)	hidden_loss 10.3104 (10.0717)	grad_norm 636.9911 (632.9133)	mem 26443MB
+[2021-09-22 22:53:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][850/1251]	eta 0:08:03 lr 0.000001	time 1.2046 (1.2046)	loss 549.1148 (538.1944)	attn_loss 539.5280 (528.1243)	hidden_loss 9.5868 (10.0701)	grad_norm 634.8393 (632.9205)	mem 26443MB
+[2021-09-22 22:53:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][860/1251]	eta 0:07:50 lr 0.000001	time 1.1982 (1.2044)	loss 512.3286 (538.1836)	attn_loss 502.3803 (528.1155)	hidden_loss 9.9483 (10.0681)	grad_norm 625.4239 (632.8835)	mem 26443MB
+[2021-09-22 22:54:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][870/1251]	eta 0:07:38 lr 0.000001	time 1.1844 (1.2044)	loss 539.0082 (538.1083)	attn_loss 529.1332 (528.0412)	hidden_loss 9.8751 (10.0671)	grad_norm 634.5823 (632.8699)	mem 26443MB
+[2021-09-22 22:54:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][880/1251]	eta 0:07:26 lr 0.000001	time 1.1978 (1.2043)	loss 551.2335 (538.0743)	attn_loss 541.7263 (528.0108)	hidden_loss 9.5072 (10.0635)	grad_norm 627.6583 (632.8761)	mem 26443MB
+[2021-09-22 22:54:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][890/1251]	eta 0:07:14 lr 0.000001	time 1.1849 (1.2043)	loss 539.6841 (538.0223)	attn_loss 529.9377 (527.9602)	hidden_loss 9.7464 (10.0622)	grad_norm 644.9434 (632.8947)	mem 26443MB
+[2021-09-22 22:54:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][900/1251]	eta 0:07:02 lr 0.000001	time 1.1944 (1.2042)	loss 507.1316 (537.9112)	attn_loss 496.9557 (527.8494)	hidden_loss 10.1759 (10.0618)	grad_norm 625.2627 (632.8758)	mem 26443MB
+[2021-09-22 22:54:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][910/1251]	eta 0:06:50 lr 0.000001	time 1.1972 (1.2042)	loss 541.7325 (537.8206)	attn_loss 531.9410 (527.7602)	hidden_loss 9.7915 (10.0604)	grad_norm 642.7291 (632.8625)	mem 26443MB
+[2021-09-22 22:55:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][920/1251]	eta 0:06:38 lr 0.000001	time 1.1902 (1.2041)	loss 518.2694 (537.6323)	attn_loss 508.2238 (527.5723)	hidden_loss 10.0456 (10.0600)	grad_norm 625.0391 (632.8580)	mem 26443MB
+[2021-09-22 22:55:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][930/1251]	eta 0:06:26 lr 0.000001	time 1.1979 (1.2040)	loss 500.6238 (537.5620)	attn_loss 490.8237 (527.5042)	hidden_loss 9.8001 (10.0578)	grad_norm 635.5473 (632.8430)	mem 26443MB
+[2021-09-22 22:55:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][940/1251]	eta 0:06:14 lr 0.000001	time 1.1870 (1.2039)	loss 534.2240 (537.5429)	attn_loss 524.3564 (527.4865)	hidden_loss 9.8676 (10.0564)	grad_norm 632.2609 (632.8631)	mem 26443MB
+[2021-09-22 22:55:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][950/1251]	eta 0:06:02 lr 0.000001	time 1.1890 (1.2038)	loss 546.3034 (537.3906)	attn_loss 536.6144 (527.3349)	hidden_loss 9.6890 (10.0557)	grad_norm 633.2535 (632.8458)	mem 26443MB
+[2021-09-22 22:55:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][960/1251]	eta 0:05:50 lr 0.000001	time 1.1817 (1.2038)	loss 546.4672 (537.3722)	attn_loss 537.0265 (527.3183)	hidden_loss 9.4407 (10.0539)	grad_norm 634.7027 (632.8758)	mem 26443MB
+[2021-09-22 22:56:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][970/1251]	eta 0:05:38 lr 0.000001	time 1.1876 (1.2038)	loss 514.7349 (537.2846)	attn_loss 504.4033 (527.2302)	hidden_loss 10.3316 (10.0544)	grad_norm 628.5524 (632.8754)	mem 26443MB
+[2021-09-22 22:56:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][980/1251]	eta 0:05:26 lr 0.000001	time 1.1890 (1.2037)	loss 533.4043 (537.2569)	attn_loss 523.2844 (527.2040)	hidden_loss 10.1199 (10.0529)	grad_norm 630.6826 (632.8920)	mem 26443MB
+[2021-09-22 22:56:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][990/1251]	eta 0:05:14 lr 0.000001	time 1.1962 (1.2036)	loss 541.0347 (537.2682)	attn_loss 531.3837 (527.2177)	hidden_loss 9.6510 (10.0504)	grad_norm 638.7727 (632.9146)	mem 26443MB
+[2021-09-22 22:56:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1000/1251]	eta 0:05:02 lr 0.000001	time 1.2053 (1.2035)	loss 549.7482 (537.1687)	attn_loss 540.1377 (527.1191)	hidden_loss 9.6105 (10.0496)	grad_norm 632.9832 (632.9504)	mem 26443MB
+[2021-09-22 22:56:55 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1010/1251]	eta 0:04:50 lr 0.000001	time 1.2056 (1.2034)	loss 544.1823 (537.1250)	attn_loss 534.5139 (527.0774)	hidden_loss 9.6684 (10.0477)	grad_norm 634.1135 (632.9438)	mem 26443MB
+[2021-09-22 22:57:07 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1020/1251]	eta 0:04:37 lr 0.000001	time 1.1961 (1.2033)	loss 551.8530 (537.0561)	attn_loss 542.0630 (527.0089)	hidden_loss 9.7900 (10.0472)	grad_norm 631.2428 (632.9550)	mem 26443MB
+[2021-09-22 22:57:19 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1030/1251]	eta 0:04:25 lr 0.000001	time 1.1972 (1.2033)	loss 549.5609 (537.0088)	attn_loss 539.9729 (526.9628)	hidden_loss 9.5879 (10.0460)	grad_norm 639.9789 (632.9657)	mem 26443MB
+[2021-09-22 22:57:31 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1040/1251]	eta 0:04:13 lr 0.000001	time 1.2017 (1.2032)	loss 531.7789 (536.9784)	attn_loss 521.6486 (526.9341)	hidden_loss 10.1303 (10.0442)	grad_norm 635.4924 (632.9754)	mem 26443MB
+[2021-09-22 22:57:43 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1050/1251]	eta 0:04:01 lr 0.000001	time 1.1987 (1.2031)	loss 543.7337 (536.9465)	attn_loss 534.0557 (526.9042)	hidden_loss 9.6781 (10.0424)	grad_norm 637.7521 (633.0034)	mem 26443MB
+[2021-09-22 22:57:54 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1060/1251]	eta 0:03:49 lr 0.000001	time 1.2005 (1.2031)	loss 547.7582 (536.8928)	attn_loss 538.0878 (526.8527)	hidden_loss 9.6705 (10.0401)	grad_norm 622.9322 (632.9767)	mem 26443MB
+[2021-09-22 22:58:06 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1070/1251]	eta 0:03:37 lr 0.000001	time 1.1953 (1.2031)	loss 516.3387 (536.7867)	attn_loss 506.3145 (526.7484)	hidden_loss 10.0243 (10.0383)	grad_norm 639.6954 (633.0259)	mem 26443MB
+[2021-09-22 22:58:18 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1080/1251]	eta 0:03:25 lr 0.000001	time 1.2048 (1.2030)	loss 541.8618 (536.7659)	attn_loss 532.1193 (526.7296)	hidden_loss 9.7425 (10.0363)	grad_norm 637.4879 (633.0306)	mem 26443MB
+[2021-09-22 22:58:30 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1090/1251]	eta 0:03:13 lr 0.000001	time 1.1779 (1.2029)	loss 535.9994 (536.6698)	attn_loss 525.8709 (526.6348)	hidden_loss 10.1285 (10.0350)	grad_norm 635.7009 (633.0250)	mem 26443MB
+[2021-09-22 22:58:42 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1100/1251]	eta 0:03:01 lr 0.000001	time 1.1990 (1.2029)	loss 532.4413 (536.5721)	attn_loss 522.1617 (526.5379)	hidden_loss 10.2796 (10.0342)	grad_norm 633.7371 (633.0244)	mem 26443MB
+[2021-09-22 22:58:54 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1110/1251]	eta 0:02:49 lr 0.000001	time 1.2103 (1.2029)	loss 511.2310 (536.5046)	attn_loss 501.4181 (526.4735)	hidden_loss 9.8129 (10.0311)	grad_norm 633.2316 (633.0379)	mem 26443MB
+[2021-09-22 22:59:06 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1120/1251]	eta 0:02:37 lr 0.000001	time 1.1917 (1.2028)	loss 536.1375 (536.3252)	attn_loss 526.2517 (526.2942)	hidden_loss 9.8858 (10.0310)	grad_norm 636.8354 (633.0375)	mem 26443MB
+[2021-09-22 22:59:18 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1130/1251]	eta 0:02:25 lr 0.000001	time 1.2004 (1.2028)	loss 519.4454 (536.2103)	attn_loss 509.2651 (526.1811)	hidden_loss 10.1803 (10.0292)	grad_norm 630.2060 (633.0497)	mem 26443MB
+[2021-09-22 22:59:30 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1140/1251]	eta 0:02:13 lr 0.000001	time 1.1941 (1.2027)	loss 549.2434 (536.1527)	attn_loss 539.7247 (526.1236)	hidden_loss 9.5187 (10.0291)	grad_norm 641.3072 (633.0537)	mem 26443MB
+[2021-09-22 22:59:42 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1150/1251]	eta 0:02:01 lr 0.000001	time 1.1985 (1.2026)	loss 543.4066 (536.0463)	attn_loss 533.5419 (526.0176)	hidden_loss 9.8647 (10.0287)	grad_norm 633.9935 (633.0631)	mem 26443MB
+[2021-09-22 22:59:54 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1160/1251]	eta 0:01:49 lr 0.000001	time 1.1850 (1.2026)	loss 547.9589 (535.9410)	attn_loss 538.2343 (525.9137)	hidden_loss 9.7247 (10.0273)	grad_norm 619.0022 (633.0533)	mem 26443MB
+[2021-09-22 23:00:06 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1170/1251]	eta 0:01:37 lr 0.000001	time 1.1910 (1.2025)	loss 529.4428 (535.8697)	attn_loss 519.1520 (525.8433)	hidden_loss 10.2908 (10.0264)	grad_norm 642.3630 (633.0941)	mem 26443MB
+[2021-09-22 23:00:18 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1180/1251]	eta 0:01:25 lr 0.000001	time 1.1875 (1.2025)	loss 501.5571 (535.7250)	attn_loss 491.7894 (525.7000)	hidden_loss 9.7676 (10.0250)	grad_norm 634.2430 (633.1161)	mem 26443MB
+[2021-09-22 23:00:30 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1190/1251]	eta 0:01:13 lr 0.000001	time 1.1916 (1.2024)	loss 520.3193 (535.6360)	attn_loss 510.1962 (525.6107)	hidden_loss 10.1231 (10.0253)	grad_norm 636.2025 (633.1292)	mem 26443MB
+[2021-09-22 23:00:42 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1200/1251]	eta 0:01:01 lr 0.000001	time 1.1843 (1.2023)	loss 539.8734 (535.5323)	attn_loss 530.5526 (525.5076)	hidden_loss 9.3207 (10.0247)	grad_norm 642.3899 (633.1426)	mem 26443MB
+[2021-09-22 23:00:54 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1210/1251]	eta 0:00:49 lr 0.000001	time 1.1885 (1.2023)	loss 541.5607 (535.5153)	attn_loss 532.2994 (525.4923)	hidden_loss 9.2612 (10.0229)	grad_norm 639.6510 (633.1683)	mem 26443MB
+[2021-09-22 23:01:06 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1220/1251]	eta 0:00:37 lr 0.000001	time 1.1865 (1.2022)	loss 498.3403 (535.4231)	attn_loss 488.2285 (525.4020)	hidden_loss 10.1118 (10.0212)	grad_norm 635.4320 (633.1844)	mem 26443MB
+[2021-09-22 23:01:18 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1230/1251]	eta 0:00:25 lr 0.000001	time 1.1918 (1.2022)	loss 528.8564 (535.3497)	attn_loss 518.3816 (525.3291)	hidden_loss 10.4748 (10.0207)	grad_norm 633.0037 (633.1866)	mem 26443MB
+[2021-09-22 23:01:30 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1240/1251]	eta 0:00:13 lr 0.000001	time 1.2129 (1.2021)	loss 530.7108 (535.2555)	attn_loss 520.7692 (525.2361)	hidden_loss 9.9416 (10.0194)	grad_norm 637.8486 (633.1917)	mem 26443MB
+[2021-09-22 23:01:42 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [2/4][1250/1251]	eta 0:00:01 lr 0.000001	time 1.1950 (1.2021)	loss 522.7550 (535.1566)	attn_loss 512.8745 (525.1373)	hidden_loss 9.8805 (10.0193)	grad_norm 637.4071 (633.2111)	mem 26443MB
+[2021-09-22 23:01:42 swin_tiny_patch4_window7_224] (main.py 369): INFO EPOCH 2 training takes 0:25:04
+[2021-09-22 23:01:42 swin_tiny_patch4_window7_224] (utils.py 63): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_2.pth saving......
+[2021-09-22 23:01:43 swin_tiny_patch4_window7_224] (utils.py 65): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_2.pth saved !!!
+[2021-09-22 23:01:52 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][0/1251]	eta 3:06:20 lr 0.000001	time 8.9375 (8.9375)	loss 536.7606 (536.7606)	attn_loss 527.0716 (527.0716)	hidden_loss 9.6890 (9.6890)	grad_norm 636.6723 (636.6723)	mem 26443MB
+[2021-09-22 23:02:04 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][10/1251]	eta 0:39:20 lr 0.000001	time 1.1909 (1.9017)	loss 533.1425 (523.4899)	attn_loss 523.6201 (513.6346)	hidden_loss 9.5223 (9.8554)	grad_norm 634.0413 (631.4430)	mem 26443MB
+[2021-09-22 23:02:16 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][20/1251]	eta 0:32:07 lr 0.000001	time 1.1886 (1.5661)	loss 531.7059 (528.1180)	attn_loss 522.1331 (518.3392)	hidden_loss 9.5728 (9.7788)	grad_norm 636.0316 (633.7140)	mem 26443MB
+[2021-09-22 23:02:28 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][30/1251]	eta 0:29:26 lr 0.000001	time 1.2086 (1.4470)	loss 538.3210 (526.0607)	attn_loss 528.6391 (516.2038)	hidden_loss 9.6820 (9.8569)	grad_norm 632.1871 (632.9326)	mem 26443MB
+[2021-09-22 23:02:40 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][40/1251]	eta 0:27:58 lr 0.000001	time 1.1795 (1.3860)	loss 536.2827 (525.9347)	attn_loss 526.5312 (516.0865)	hidden_loss 9.7515 (9.8482)	grad_norm 642.1757 (633.9991)	mem 26443MB
+[2021-09-22 23:02:52 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][50/1251]	eta 0:26:59 lr 0.000001	time 1.1855 (1.3489)	loss 515.7204 (525.4080)	attn_loss 505.6627 (515.5472)	hidden_loss 10.0577 (9.8608)	grad_norm 629.4316 (634.3694)	mem 26443MB
+[2021-09-22 23:03:04 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][60/1251]	eta 0:26:17 lr 0.000001	time 1.1819 (1.3248)	loss 536.6199 (525.8735)	attn_loss 526.5629 (516.0079)	hidden_loss 10.0570 (9.8657)	grad_norm 630.4763 (634.5854)	mem 26443MB
+[2021-09-22 23:03:16 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][70/1251]	eta 0:25:43 lr 0.000001	time 1.1870 (1.3066)	loss 495.6769 (524.7349)	attn_loss 485.6544 (514.8631)	hidden_loss 10.0225 (9.8719)	grad_norm 638.8553 (634.4159)	mem 26443MB
+[2021-09-22 23:03:28 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][80/1251]	eta 0:25:14 lr 0.000001	time 1.1956 (1.2931)	loss 533.8120 (524.5719)	attn_loss 524.2455 (514.7032)	hidden_loss 9.5665 (9.8686)	grad_norm 637.6899 (634.2305)	mem 26443MB
+[2021-09-22 23:03:40 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][90/1251]	eta 0:24:48 lr 0.000001	time 1.2140 (1.2821)	loss 539.2639 (525.1332)	attn_loss 529.5956 (515.2677)	hidden_loss 9.6683 (9.8655)	grad_norm 631.9857 (634.5602)	mem 26443MB
+[2021-09-22 23:03:52 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][100/1251]	eta 0:24:25 lr 0.000001	time 1.1893 (1.2735)	loss 535.4623 (524.9953)	attn_loss 525.1135 (515.1324)	hidden_loss 10.3488 (9.8629)	grad_norm 634.4069 (634.7589)	mem 26443MB
+[2021-09-22 23:04:04 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][110/1251]	eta 0:24:05 lr 0.000001	time 1.1880 (1.2668)	loss 536.6003 (525.1798)	attn_loss 526.9904 (515.3118)	hidden_loss 9.6099 (9.8680)	grad_norm 638.5105 (634.8461)	mem 26443MB
+[2021-09-22 23:04:16 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][120/1251]	eta 0:23:46 lr 0.000001	time 1.1876 (1.2611)	loss 537.8859 (524.5214)	attn_loss 528.3394 (514.6550)	hidden_loss 9.5466 (9.8664)	grad_norm 626.2233 (634.5109)	mem 26443MB
+[2021-09-22 23:04:28 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][130/1251]	eta 0:23:28 lr 0.000001	time 1.1854 (1.2561)	loss 496.6633 (524.8769)	attn_loss 486.6364 (515.0127)	hidden_loss 10.0269 (9.8641)	grad_norm 630.7988 (634.6111)	mem 26443MB
+[2021-09-22 23:04:40 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][140/1251]	eta 0:23:11 lr 0.000001	time 1.1987 (1.2521)	loss 536.5212 (525.3545)	attn_loss 526.9634 (515.4970)	hidden_loss 9.5578 (9.8576)	grad_norm 640.7607 (634.6690)	mem 26443MB
+[2021-09-22 23:04:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][150/1251]	eta 0:22:54 lr 0.000001	time 1.1952 (1.2483)	loss 501.9352 (525.4941)	attn_loss 491.3913 (515.6281)	hidden_loss 10.5439 (9.8660)	grad_norm 628.8646 (634.4972)	mem 26443MB
+[2021-09-22 23:05:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][160/1251]	eta 0:22:38 lr 0.000001	time 1.1898 (1.2451)	loss 535.7554 (525.7645)	attn_loss 526.2645 (515.8977)	hidden_loss 9.4908 (9.8669)	grad_norm 633.6733 (634.6870)	mem 26443MB
+[2021-09-22 23:05:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][170/1251]	eta 0:22:23 lr 0.000001	time 1.2005 (1.2427)	loss 538.8098 (526.2658)	attn_loss 529.2941 (516.4111)	hidden_loss 9.5157 (9.8547)	grad_norm 640.6686 (634.8130)	mem 26443MB
+[2021-09-22 23:05:28 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][180/1251]	eta 0:22:08 lr 0.000001	time 1.2241 (1.2404)	loss 537.0983 (526.0266)	attn_loss 527.8208 (516.1753)	hidden_loss 9.2775 (9.8513)	grad_norm 627.2964 (634.7687)	mem 26443MB
+[2021-09-22 23:05:40 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][190/1251]	eta 0:21:53 lr 0.000001	time 1.1976 (1.2383)	loss 535.0283 (526.2689)	attn_loss 525.4247 (516.4179)	hidden_loss 9.6036 (9.8509)	grad_norm 632.0118 (634.7973)	mem 26443MB
+[2021-09-22 23:05:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][200/1251]	eta 0:21:39 lr 0.000001	time 1.1925 (1.2361)	loss 542.6420 (526.6833)	attn_loss 533.0223 (516.8359)	hidden_loss 9.6197 (9.8473)	grad_norm 620.6747 (634.8925)	mem 26443MB
+[2021-09-22 23:06:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][210/1251]	eta 0:21:25 lr 0.000001	time 1.1948 (1.2346)	loss 532.4198 (526.5918)	attn_loss 523.0187 (516.7444)	hidden_loss 9.4011 (9.8474)	grad_norm 641.7744 (635.0209)	mem 26443MB
+[2021-09-22 23:06:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][220/1251]	eta 0:21:11 lr 0.000001	time 1.1887 (1.2328)	loss 523.0267 (526.4256)	attn_loss 513.0276 (516.5829)	hidden_loss 9.9992 (9.8428)	grad_norm 635.8293 (635.0591)	mem 26443MB
+[2021-09-22 23:06:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][230/1251]	eta 0:20:57 lr 0.000001	time 1.2018 (1.2313)	loss 532.6462 (526.4076)	attn_loss 523.0470 (516.5651)	hidden_loss 9.5993 (9.8425)	grad_norm 637.5490 (635.0855)	mem 26443MB
+[2021-09-22 23:06:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][240/1251]	eta 0:20:43 lr 0.000001	time 1.1909 (1.2299)	loss 539.7761 (526.3800)	attn_loss 530.2931 (516.5349)	hidden_loss 9.4830 (9.8451)	grad_norm 643.5895 (635.1956)	mem 26443MB
+[2021-09-22 23:06:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][250/1251]	eta 0:20:29 lr 0.000001	time 1.1871 (1.2285)	loss 537.3674 (526.4949)	attn_loss 527.7432 (516.6506)	hidden_loss 9.6241 (9.8443)	grad_norm 631.6416 (635.2580)	mem 26443MB
+[2021-09-22 23:07:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][260/1251]	eta 0:20:16 lr 0.000001	time 1.1949 (1.2271)	loss 507.3601 (526.5348)	attn_loss 497.3537 (516.6943)	hidden_loss 10.0064 (9.8405)	grad_norm 629.0955 (inf)	mem 26443MB
+[2021-09-22 23:07:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][270/1251]	eta 0:20:02 lr 0.000001	time 1.1965 (1.2259)	loss 542.6781 (526.2368)	attn_loss 532.5429 (516.3898)	hidden_loss 10.1352 (9.8470)	grad_norm 634.8696 (inf)	mem 26443MB
+[2021-09-22 23:07:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][280/1251]	eta 0:19:49 lr 0.000001	time 1.1937 (1.2248)	loss 531.1088 (526.3248)	attn_loss 521.4522 (516.4827)	hidden_loss 9.6565 (9.8421)	grad_norm 628.3240 (inf)	mem 26443MB
+[2021-09-22 23:07:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][290/1251]	eta 0:19:36 lr 0.000001	time 1.1918 (1.2239)	loss 499.5977 (526.1060)	attn_loss 489.9224 (516.2684)	hidden_loss 9.6753 (9.8376)	grad_norm 638.2140 (inf)	mem 26443MB
+[2021-09-22 23:07:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][300/1251]	eta 0:19:22 lr 0.000001	time 1.1950 (1.2229)	loss 523.2855 (525.7627)	attn_loss 513.1845 (515.9220)	hidden_loss 10.1010 (9.8407)	grad_norm 637.7727 (inf)	mem 26443MB
+[2021-09-22 23:08:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][310/1251]	eta 0:19:09 lr 0.000001	time 1.2003 (1.2221)	loss 531.0925 (525.7637)	attn_loss 520.9444 (515.9259)	hidden_loss 10.1481 (9.8378)	grad_norm 637.7340 (inf)	mem 26443MB
+[2021-09-22 23:08:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][320/1251]	eta 0:18:57 lr 0.000001	time 1.2027 (1.2215)	loss 523.5751 (525.7925)	attn_loss 513.4138 (515.9509)	hidden_loss 10.1614 (9.8416)	grad_norm 642.8316 (inf)	mem 26443MB
+[2021-09-22 23:08:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][330/1251]	eta 0:18:44 lr 0.000001	time 1.1815 (1.2208)	loss 528.5475 (525.7268)	attn_loss 518.6804 (515.8848)	hidden_loss 9.8671 (9.8420)	grad_norm 633.5185 (inf)	mem 26443MB
+[2021-09-22 23:08:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][340/1251]	eta 0:18:31 lr 0.000001	time 1.1959 (1.2200)	loss 501.7442 (525.6630)	attn_loss 491.8125 (515.8258)	hidden_loss 9.9317 (9.8372)	grad_norm 639.8859 (inf)	mem 26443MB
+[2021-09-22 23:08:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][350/1251]	eta 0:18:18 lr 0.000001	time 1.1850 (1.2194)	loss 534.6557 (525.6308)	attn_loss 525.2201 (515.7953)	hidden_loss 9.4356 (9.8355)	grad_norm 645.0958 (inf)	mem 26443MB
+[2021-09-22 23:09:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][360/1251]	eta 0:18:05 lr 0.000001	time 1.1932 (1.2188)	loss 525.4846 (525.4619)	attn_loss 516.0187 (515.6264)	hidden_loss 9.4659 (9.8355)	grad_norm 640.2948 (inf)	mem 26443MB
+[2021-09-22 23:09:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][370/1251]	eta 0:17:53 lr 0.000001	time 1.2126 (1.2181)	loss 487.3320 (525.3831)	attn_loss 477.4218 (515.5508)	hidden_loss 9.9101 (9.8323)	grad_norm 627.4197 (inf)	mem 26443MB
+[2021-09-22 23:09:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][380/1251]	eta 0:17:40 lr 0.000001	time 1.1898 (1.2175)	loss 532.3578 (525.3482)	attn_loss 522.5493 (515.5194)	hidden_loss 9.8086 (9.8288)	grad_norm 644.9099 (inf)	mem 26443MB
+[2021-09-22 23:09:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][390/1251]	eta 0:17:27 lr 0.000001	time 1.2272 (1.2170)	loss 531.1664 (525.3337)	attn_loss 520.9567 (515.5027)	hidden_loss 10.2097 (9.8310)	grad_norm 628.7990 (inf)	mem 26443MB
+[2021-09-22 23:09:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][400/1251]	eta 0:17:15 lr 0.000001	time 1.2021 (1.2166)	loss 522.7847 (525.4243)	attn_loss 513.0923 (515.5996)	hidden_loss 9.6924 (9.8248)	grad_norm 633.5474 (inf)	mem 26443MB
+[2021-09-22 23:10:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][410/1251]	eta 0:17:02 lr 0.000001	time 1.1966 (1.2162)	loss 535.9137 (525.3817)	attn_loss 526.6299 (515.5581)	hidden_loss 9.2838 (9.8236)	grad_norm 643.3699 (inf)	mem 26443MB
+[2021-09-22 23:10:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][420/1251]	eta 0:16:50 lr 0.000001	time 1.1854 (1.2156)	loss 531.1532 (525.5020)	attn_loss 521.8286 (515.6829)	hidden_loss 9.3246 (9.8191)	grad_norm 640.6284 (inf)	mem 26443MB
+[2021-09-22 23:10:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][430/1251]	eta 0:16:37 lr 0.000001	time 1.1857 (1.2152)	loss 484.4227 (525.0881)	attn_loss 474.5495 (515.2650)	hidden_loss 9.8731 (9.8231)	grad_norm 638.6616 (inf)	mem 26443MB
+[2021-09-22 23:10:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][440/1251]	eta 0:16:25 lr 0.000001	time 1.1931 (1.2147)	loss 534.8916 (525.0937)	attn_loss 525.4241 (515.2695)	hidden_loss 9.4675 (9.8242)	grad_norm 642.7472 (inf)	mem 26443MB
+[2021-09-22 23:10:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][450/1251]	eta 0:16:12 lr 0.000001	time 1.1879 (1.2143)	loss 521.5228 (524.9535)	attn_loss 511.5441 (515.1308)	hidden_loss 9.9787 (9.8227)	grad_norm 649.1613 (inf)	mem 26443MB
+[2021-09-22 23:11:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][460/1251]	eta 0:16:00 lr 0.000001	time 1.1917 (1.2140)	loss 489.6428 (524.6111)	attn_loss 480.1173 (514.7874)	hidden_loss 9.5255 (9.8237)	grad_norm 633.5084 (inf)	mem 26443MB
+[2021-09-22 23:11:15 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][470/1251]	eta 0:15:47 lr 0.000001	time 1.1901 (1.2137)	loss 533.0178 (524.4864)	attn_loss 522.9207 (514.6639)	hidden_loss 10.0972 (9.8226)	grad_norm 648.4217 (inf)	mem 26443MB
+[2021-09-22 23:11:27 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][480/1251]	eta 0:15:35 lr 0.000001	time 1.1790 (1.2134)	loss 500.6056 (524.3892)	attn_loss 490.6187 (514.5666)	hidden_loss 9.9869 (9.8226)	grad_norm 638.3173 (inf)	mem 26443MB
+[2021-09-22 23:11:39 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][490/1251]	eta 0:15:23 lr 0.000001	time 1.1908 (1.2130)	loss 482.8556 (524.3425)	attn_loss 472.7044 (514.5198)	hidden_loss 10.1511 (9.8226)	grad_norm 636.1967 (inf)	mem 26443MB
+[2021-09-22 23:11:51 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][500/1251]	eta 0:15:10 lr 0.000001	time 1.1820 (1.2127)	loss 502.0846 (524.2787)	attn_loss 492.1914 (514.4589)	hidden_loss 9.8932 (9.8197)	grad_norm 634.5170 (inf)	mem 26443MB
+[2021-09-22 23:12:03 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][510/1251]	eta 0:14:58 lr 0.000001	time 1.1837 (1.2125)	loss 520.4279 (524.2548)	attn_loss 510.3853 (514.4345)	hidden_loss 10.0426 (9.8203)	grad_norm 630.7677 (inf)	mem 26443MB
+[2021-09-22 23:12:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][520/1251]	eta 0:14:46 lr 0.000001	time 1.1864 (1.2121)	loss 490.7298 (524.0551)	attn_loss 480.8449 (514.2357)	hidden_loss 9.8849 (9.8194)	grad_norm 631.4159 (inf)	mem 26443MB
+[2021-09-22 23:12:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][530/1251]	eta 0:14:33 lr 0.000001	time 1.1926 (1.2117)	loss 525.0972 (523.9004)	attn_loss 515.3325 (514.0814)	hidden_loss 9.7646 (9.8190)	grad_norm 644.8425 (inf)	mem 26443MB
+[2021-09-22 23:12:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][540/1251]	eta 0:14:21 lr 0.000001	time 1.2070 (1.2115)	loss 507.4149 (523.5933)	attn_loss 497.7301 (513.7749)	hidden_loss 9.6848 (9.8184)	grad_norm 634.1501 (inf)	mem 26443MB
+[2021-09-22 23:12:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][550/1251]	eta 0:14:09 lr 0.000001	time 1.1873 (1.2112)	loss 515.1047 (523.5004)	attn_loss 505.1208 (513.6817)	hidden_loss 9.9838 (9.8187)	grad_norm 638.9956 (inf)	mem 26443MB
+[2021-09-22 23:13:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][560/1251]	eta 0:13:56 lr 0.000001	time 1.1921 (1.2110)	loss 523.5555 (523.2761)	attn_loss 513.4348 (513.4594)	hidden_loss 10.1208 (9.8168)	grad_norm 630.6260 (inf)	mem 26443MB
+[2021-09-22 23:13:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][570/1251]	eta 0:13:44 lr 0.000001	time 1.2096 (1.2107)	loss 501.2676 (523.1134)	attn_loss 491.4100 (513.2987)	hidden_loss 9.8576 (9.8146)	grad_norm 638.6605 (inf)	mem 26443MB
+[2021-09-22 23:13:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][580/1251]	eta 0:13:32 lr 0.000001	time 1.1920 (1.2105)	loss 520.4130 (523.0079)	attn_loss 510.2520 (513.1918)	hidden_loss 10.1610 (9.8161)	grad_norm 634.7798 (inf)	mem 26443MB
+[2021-09-22 23:13:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][590/1251]	eta 0:13:19 lr 0.000001	time 1.1890 (1.2103)	loss 525.1064 (522.9144)	attn_loss 515.1143 (513.0974)	hidden_loss 9.9921 (9.8170)	grad_norm 639.8433 (inf)	mem 26443MB
+[2021-09-22 23:13:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][600/1251]	eta 0:13:07 lr 0.000001	time 1.2014 (1.2102)	loss 496.1122 (522.6713)	attn_loss 485.8860 (512.8530)	hidden_loss 10.2263 (9.8183)	grad_norm 637.7286 (inf)	mem 26443MB
+[2021-09-22 23:14:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][610/1251]	eta 0:12:55 lr 0.000001	time 1.1948 (1.2100)	loss 524.6851 (522.7040)	attn_loss 514.7483 (512.8881)	hidden_loss 9.9369 (9.8159)	grad_norm 638.5193 (inf)	mem 26443MB
+[2021-09-22 23:14:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][620/1251]	eta 0:12:43 lr 0.000001	time 1.2022 (1.2098)	loss 505.9113 (522.4238)	attn_loss 495.8494 (512.6079)	hidden_loss 10.0620 (9.8159)	grad_norm 640.3450 (inf)	mem 26443MB
+[2021-09-22 23:14:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][630/1251]	eta 0:12:31 lr 0.000001	time 1.1875 (1.2097)	loss 528.0001 (522.4471)	attn_loss 518.5050 (512.6324)	hidden_loss 9.4951 (9.8147)	grad_norm 647.2070 (inf)	mem 26443MB
+[2021-09-22 23:14:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][640/1251]	eta 0:12:19 lr 0.000001	time 1.1821 (1.2095)	loss 522.6075 (522.3252)	attn_loss 512.2593 (512.5095)	hidden_loss 10.3482 (9.8157)	grad_norm 635.5568 (inf)	mem 26443MB
+[2021-09-22 23:14:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][650/1251]	eta 0:12:06 lr 0.000001	time 1.1988 (1.2093)	loss 512.5385 (522.0457)	attn_loss 502.6816 (512.2304)	hidden_loss 9.8569 (9.8153)	grad_norm 636.2914 (inf)	mem 26443MB
+[2021-09-22 23:15:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][660/1251]	eta 0:11:54 lr 0.000001	time 1.2180 (1.2091)	loss 504.7449 (521.7881)	attn_loss 494.7434 (511.9730)	hidden_loss 10.0015 (9.8151)	grad_norm 637.3952 (inf)	mem 26443MB
+[2021-09-22 23:15:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][670/1251]	eta 0:11:42 lr 0.000001	time 1.2015 (1.2090)	loss 526.8848 (521.6975)	attn_loss 517.1068 (511.8825)	hidden_loss 9.7780 (9.8150)	grad_norm 638.3405 (inf)	mem 26443MB
+[2021-09-22 23:15:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][680/1251]	eta 0:11:30 lr 0.000001	time 1.1828 (1.2088)	loss 525.2448 (521.6662)	attn_loss 515.8552 (511.8521)	hidden_loss 9.3895 (9.8141)	grad_norm 648.3176 (inf)	mem 26443MB
+[2021-09-22 23:15:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][690/1251]	eta 0:11:18 lr 0.000001	time 1.1937 (1.2086)	loss 505.2841 (521.4358)	attn_loss 495.0959 (511.6220)	hidden_loss 10.1881 (9.8138)	grad_norm 634.6892 (inf)	mem 26443MB
+[2021-09-22 23:15:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][700/1251]	eta 0:11:05 lr 0.000001	time 1.1931 (1.2084)	loss 529.8388 (521.3725)	attn_loss 519.8297 (511.5594)	hidden_loss 10.0092 (9.8131)	grad_norm 645.8245 (inf)	mem 26443MB
+[2021-09-22 23:16:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][710/1251]	eta 0:10:53 lr 0.000001	time 1.1832 (1.2082)	loss 531.3233 (521.3096)	attn_loss 521.8220 (511.4967)	hidden_loss 9.5013 (9.8129)	grad_norm 640.7943 (inf)	mem 26443MB
+[2021-09-22 23:16:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][720/1251]	eta 0:10:41 lr 0.000001	time 1.1994 (1.2080)	loss 524.3752 (521.2375)	attn_loss 514.9097 (511.4274)	hidden_loss 9.4655 (9.8101)	grad_norm 655.0305 (inf)	mem 26443MB
+[2021-09-22 23:16:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][730/1251]	eta 0:10:29 lr 0.000001	time 1.1974 (1.2079)	loss 533.1056 (521.2298)	attn_loss 523.6135 (511.4227)	hidden_loss 9.4920 (9.8070)	grad_norm 653.4868 (inf)	mem 26443MB
+[2021-09-22 23:16:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][740/1251]	eta 0:10:17 lr 0.000001	time 1.2098 (1.2077)	loss 534.0072 (521.2086)	attn_loss 524.8029 (511.4024)	hidden_loss 9.2043 (9.8062)	grad_norm 641.9499 (inf)	mem 26443MB
+[2021-09-22 23:16:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][750/1251]	eta 0:10:05 lr 0.000001	time 1.1886 (1.2076)	loss 523.6744 (521.1313)	attn_loss 513.7257 (511.3267)	hidden_loss 9.9487 (9.8046)	grad_norm 643.8049 (inf)	mem 26443MB
+[2021-09-22 23:17:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][760/1251]	eta 0:09:52 lr 0.000001	time 1.2106 (1.2075)	loss 527.8209 (520.8475)	attn_loss 518.2571 (511.0431)	hidden_loss 9.5638 (9.8044)	grad_norm 643.8695 (inf)	mem 26443MB
+[2021-09-22 23:17:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][770/1251]	eta 0:09:40 lr 0.000001	time 1.1915 (1.2074)	loss 499.5002 (520.7924)	attn_loss 489.7239 (510.9890)	hidden_loss 9.7763 (9.8034)	grad_norm 647.1075 (inf)	mem 26443MB
+[2021-09-22 23:17:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][780/1251]	eta 0:09:28 lr 0.000001	time 1.1918 (1.2073)	loss 526.5454 (520.6325)	attn_loss 517.0966 (510.8286)	hidden_loss 9.4488 (9.8039)	grad_norm 634.2925 (inf)	mem 26443MB
+[2021-09-22 23:17:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][790/1251]	eta 0:09:16 lr 0.000001	time 1.1910 (1.2071)	loss 485.9482 (520.5279)	attn_loss 475.7879 (510.7253)	hidden_loss 10.1603 (9.8026)	grad_norm 630.1716 (inf)	mem 26443MB
+[2021-09-22 23:17:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][800/1251]	eta 0:09:04 lr 0.000001	time 1.1962 (1.2070)	loss 530.9810 (520.4692)	attn_loss 520.9354 (510.6660)	hidden_loss 10.0457 (9.8032)	grad_norm 640.2883 (inf)	mem 26443MB
+[2021-09-22 23:18:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][810/1251]	eta 0:08:52 lr 0.000001	time 1.1955 (1.2069)	loss 526.2383 (520.4684)	attn_loss 516.9839 (510.6682)	hidden_loss 9.2544 (9.8002)	grad_norm 635.0002 (inf)	mem 26443MB
+[2021-09-22 23:18:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][820/1251]	eta 0:08:40 lr 0.000001	time 1.1923 (1.2067)	loss 489.0881 (520.2591)	attn_loss 479.1483 (510.4582)	hidden_loss 9.9398 (9.8009)	grad_norm 631.7018 (inf)	mem 26443MB
+[2021-09-22 23:18:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][830/1251]	eta 0:08:27 lr 0.000001	time 1.1836 (1.2066)	loss 528.7720 (520.1096)	attn_loss 518.8936 (510.3100)	hidden_loss 9.8783 (9.7995)	grad_norm 651.8513 (inf)	mem 26443MB
+[2021-09-22 23:18:38 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][840/1251]	eta 0:08:15 lr 0.000001	time 1.1869 (1.2065)	loss 501.6032 (520.1614)	attn_loss 491.6508 (510.3651)	hidden_loss 9.9525 (9.7963)	grad_norm 647.3937 (inf)	mem 26443MB
+[2021-09-22 23:18:50 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][850/1251]	eta 0:08:03 lr 0.000001	time 1.1827 (1.2064)	loss 507.0756 (520.1343)	attn_loss 497.1913 (510.3391)	hidden_loss 9.8844 (9.7952)	grad_norm 643.4872 (inf)	mem 26443MB
+[2021-09-22 23:19:02 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][860/1251]	eta 0:07:51 lr 0.000001	time 1.1962 (1.2063)	loss 526.7570 (520.1340)	attn_loss 517.3310 (510.3403)	hidden_loss 9.4260 (9.7937)	grad_norm 636.4432 (inf)	mem 26443MB
+[2021-09-22 23:19:14 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][870/1251]	eta 0:07:39 lr 0.000001	time 1.1921 (1.2062)	loss 509.2172 (520.1525)	attn_loss 499.2671 (510.3610)	hidden_loss 9.9501 (9.7915)	grad_norm 643.8094 (inf)	mem 26443MB
+[2021-09-22 23:19:26 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][880/1251]	eta 0:07:27 lr 0.000001	time 1.1862 (1.2061)	loss 490.2138 (519.9806)	attn_loss 480.4852 (510.1892)	hidden_loss 9.7286 (9.7914)	grad_norm 639.3757 (inf)	mem 26443MB
+[2021-09-22 23:19:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][890/1251]	eta 0:07:15 lr 0.000001	time 1.2094 (1.2059)	loss 525.7023 (519.9092)	attn_loss 516.3496 (510.1196)	hidden_loss 9.3527 (9.7896)	grad_norm 654.3273 (inf)	mem 26443MB
+[2021-09-22 23:19:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][900/1251]	eta 0:07:03 lr 0.000001	time 1.2055 (1.2058)	loss 525.5264 (519.8941)	attn_loss 516.2424 (510.1066)	hidden_loss 9.2839 (9.7874)	grad_norm 642.6809 (inf)	mem 26443MB
+[2021-09-22 23:20:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][910/1251]	eta 0:06:51 lr 0.000001	time 1.1915 (1.2057)	loss 522.6263 (519.7453)	attn_loss 512.8102 (509.9593)	hidden_loss 9.8161 (9.7860)	grad_norm 642.8314 (inf)	mem 26443MB
+[2021-09-22 23:20:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][920/1251]	eta 0:06:39 lr 0.000001	time 1.1850 (1.2055)	loss 483.8150 (519.6963)	attn_loss 473.9952 (509.9121)	hidden_loss 9.8199 (9.7842)	grad_norm 636.3821 (inf)	mem 26443MB
+[2021-09-22 23:20:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][930/1251]	eta 0:06:26 lr 0.000001	time 1.1943 (1.2055)	loss 523.0775 (519.6555)	attn_loss 513.9200 (509.8732)	hidden_loss 9.1574 (9.7824)	grad_norm 649.2655 (inf)	mem 26443MB
+[2021-09-22 23:20:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][940/1251]	eta 0:06:14 lr 0.000001	time 1.2160 (1.2054)	loss 517.8950 (519.4965)	attn_loss 508.0854 (509.7143)	hidden_loss 9.8096 (9.7822)	grad_norm 649.0852 (inf)	mem 26443MB
+[2021-09-22 23:20:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][950/1251]	eta 0:06:02 lr 0.000001	time 1.1844 (1.2054)	loss 491.8886 (519.4830)	attn_loss 481.8961 (509.7027)	hidden_loss 9.9925 (9.7803)	grad_norm 647.4292 (inf)	mem 26443MB
+[2021-09-22 23:21:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][960/1251]	eta 0:05:50 lr 0.000001	time 1.2011 (1.2053)	loss 478.5645 (519.4049)	attn_loss 468.5466 (509.6259)	hidden_loss 10.0179 (9.7790)	grad_norm 637.5491 (inf)	mem 26443MB
+[2021-09-22 23:21:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][970/1251]	eta 0:05:38 lr 0.000001	time 1.1847 (1.2052)	loss 519.3807 (519.2052)	attn_loss 509.9094 (509.4275)	hidden_loss 9.4713 (9.7777)	grad_norm 641.9651 (inf)	mem 26443MB
+[2021-09-22 23:21:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][980/1251]	eta 0:05:26 lr 0.000001	time 1.1825 (1.2051)	loss 505.8429 (519.1354)	attn_loss 496.0299 (509.3584)	hidden_loss 9.8130 (9.7770)	grad_norm 654.0702 (inf)	mem 26443MB
+[2021-09-22 23:21:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][990/1251]	eta 0:05:14 lr 0.000001	time 1.2095 (1.2050)	loss 517.6279 (518.9667)	attn_loss 507.8380 (509.1900)	hidden_loss 9.7899 (9.7767)	grad_norm 650.2704 (inf)	mem 26443MB
+[2021-09-22 23:21:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1000/1251]	eta 0:05:02 lr 0.000001	time 1.1971 (1.2049)	loss 483.0298 (518.8237)	attn_loss 472.9750 (509.0470)	hidden_loss 10.0548 (9.7767)	grad_norm 629.7455 (inf)	mem 26443MB
+[2021-09-22 23:22:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1010/1251]	eta 0:04:50 lr 0.000001	time 1.1826 (1.2048)	loss 524.0407 (518.6720)	attn_loss 514.6945 (508.8952)	hidden_loss 9.3462 (9.7768)	grad_norm 648.2191 (inf)	mem 26443MB
+[2021-09-22 23:22:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1020/1251]	eta 0:04:38 lr 0.000001	time 1.1871 (1.2048)	loss 497.6794 (518.5856)	attn_loss 487.9526 (508.8092)	hidden_loss 9.7268 (9.7764)	grad_norm 637.3185 (inf)	mem 26443MB
+[2021-09-22 23:22:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1030/1251]	eta 0:04:26 lr 0.000001	time 1.2007 (1.2047)	loss 493.1064 (518.5100)	attn_loss 483.2738 (508.7347)	hidden_loss 9.8326 (9.7753)	grad_norm 632.4378 (inf)	mem 26443MB
+[2021-09-22 23:22:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1040/1251]	eta 0:04:14 lr 0.000001	time 1.2045 (1.2046)	loss 522.4346 (518.4098)	attn_loss 513.3397 (508.6357)	hidden_loss 9.0949 (9.7741)	grad_norm 640.5629 (inf)	mem 26443MB
+[2021-09-22 23:22:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1050/1251]	eta 0:04:02 lr 0.000001	time 1.1902 (1.2045)	loss 474.9516 (518.3297)	attn_loss 465.2238 (508.5579)	hidden_loss 9.7278 (9.7717)	grad_norm 644.9114 (inf)	mem 26443MB
+[2021-09-22 23:23:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1060/1251]	eta 0:03:50 lr 0.000001	time 1.2027 (1.2044)	loss 510.8442 (518.2710)	attn_loss 500.6056 (508.5008)	hidden_loss 10.2386 (9.7703)	grad_norm 634.1209 (inf)	mem 26443MB
+[2021-09-22 23:23:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1070/1251]	eta 0:03:37 lr 0.000001	time 1.1935 (1.2044)	loss 519.9478 (518.1673)	attn_loss 510.3270 (508.3978)	hidden_loss 9.6207 (9.7695)	grad_norm 646.6191 (inf)	mem 26443MB
+[2021-09-22 23:23:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1080/1251]	eta 0:03:25 lr 0.000001	time 1.1844 (1.2043)	loss 477.9872 (518.0710)	attn_loss 468.1214 (508.3031)	hidden_loss 9.8658 (9.7678)	grad_norm 645.7048 (inf)	mem 26443MB
+[2021-09-22 23:23:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1090/1251]	eta 0:03:13 lr 0.000001	time 1.1962 (1.2042)	loss 474.9587 (517.9751)	attn_loss 464.9672 (508.2085)	hidden_loss 9.9915 (9.7667)	grad_norm 637.6403 (inf)	mem 26443MB
+[2021-09-22 23:23:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1100/1251]	eta 0:03:01 lr 0.000001	time 1.1836 (1.2041)	loss 523.7100 (517.8413)	attn_loss 514.6653 (508.0747)	hidden_loss 9.0447 (9.7666)	grad_norm 646.9096 (inf)	mem 26443MB
+[2021-09-22 23:24:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1110/1251]	eta 0:02:49 lr 0.000001	time 1.1930 (1.2041)	loss 523.2950 (517.8314)	attn_loss 513.6831 (508.0660)	hidden_loss 9.6119 (9.7654)	grad_norm 645.8632 (inf)	mem 26443MB
+[2021-09-22 23:24:13 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1120/1251]	eta 0:02:37 lr 0.000001	time 1.1814 (1.2040)	loss 519.2366 (517.8155)	attn_loss 510.0313 (508.0515)	hidden_loss 9.2053 (9.7640)	grad_norm 647.3236 (inf)	mem 26443MB
+[2021-09-22 23:24:25 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1130/1251]	eta 0:02:25 lr 0.000001	time 1.1925 (1.2039)	loss 516.7464 (517.6748)	attn_loss 506.8569 (507.9105)	hidden_loss 9.8895 (9.7643)	grad_norm 639.6464 (inf)	mem 26443MB
+[2021-09-22 23:24:37 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1140/1251]	eta 0:02:13 lr 0.000001	time 1.2313 (1.2038)	loss 495.4980 (517.5236)	attn_loss 485.5298 (507.7590)	hidden_loss 9.9683 (9.7645)	grad_norm 636.0853 (inf)	mem 26443MB
+[2021-09-22 23:24:49 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1150/1251]	eta 0:02:01 lr 0.000001	time 1.1957 (1.2038)	loss 518.8691 (517.5170)	attn_loss 509.5111 (507.7540)	hidden_loss 9.3581 (9.7630)	grad_norm 648.5980 (inf)	mem 26443MB
+[2021-09-22 23:25:01 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1160/1251]	eta 0:01:49 lr 0.000001	time 1.1836 (1.2037)	loss 518.8605 (517.4285)	attn_loss 509.1716 (507.6662)	hidden_loss 9.6889 (9.7623)	grad_norm 646.6682 (inf)	mem 26443MB
+[2021-09-22 23:25:12 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1170/1251]	eta 0:01:37 lr 0.000001	time 1.1934 (1.2036)	loss 520.8809 (517.3095)	attn_loss 511.1917 (507.5479)	hidden_loss 9.6892 (9.7616)	grad_norm 652.2756 (inf)	mem 26443MB
+[2021-09-22 23:25:24 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1180/1251]	eta 0:01:25 lr 0.000001	time 1.1914 (1.2036)	loss 489.3364 (517.2098)	attn_loss 479.7794 (507.4495)	hidden_loss 9.5570 (9.7603)	grad_norm 633.0532 (inf)	mem 26443MB
+[2021-09-22 23:25:36 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1190/1251]	eta 0:01:13 lr 0.000001	time 1.1981 (1.2036)	loss 517.7702 (517.1966)	attn_loss 508.3742 (507.4384)	hidden_loss 9.3960 (9.7582)	grad_norm 634.1010 (inf)	mem 26443MB
+[2021-09-22 23:25:48 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1200/1251]	eta 0:01:01 lr 0.000001	time 1.2052 (1.2035)	loss 521.8938 (517.2080)	attn_loss 512.6443 (507.4526)	hidden_loss 9.2495 (9.7553)	grad_norm 646.8285 (inf)	mem 26443MB
+[2021-09-22 23:26:00 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1210/1251]	eta 0:00:49 lr 0.000001	time 1.2366 (1.2035)	loss 520.5806 (517.1881)	attn_loss 511.1784 (507.4342)	hidden_loss 9.4021 (9.7540)	grad_norm 639.8530 (inf)	mem 26443MB
+[2021-09-22 23:26:12 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1220/1251]	eta 0:00:37 lr 0.000001	time 1.1977 (1.2035)	loss 485.9020 (517.0822)	attn_loss 476.5291 (507.3298)	hidden_loss 9.3728 (9.7524)	grad_norm 655.5108 (inf)	mem 26443MB
+[2021-09-22 23:26:24 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1230/1251]	eta 0:00:25 lr 0.000001	time 1.2081 (1.2034)	loss 485.7910 (516.9085)	attn_loss 476.0727 (507.1565)	hidden_loss 9.7183 (9.7520)	grad_norm 644.5482 (inf)	mem 26443MB
+[2021-09-22 23:26:36 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1240/1251]	eta 0:00:13 lr 0.000001	time 1.1887 (1.2034)	loss 508.3696 (516.8615)	attn_loss 498.5750 (507.1094)	hidden_loss 9.7947 (9.7521)	grad_norm 655.1418 (inf)	mem 26443MB
+[2021-09-22 23:26:48 swin_tiny_patch4_window7_224] (main.py 359): INFO Train: [3/4][1250/1251]	eta 0:00:01 lr 0.000001	time 1.1921 (1.2032)	loss 519.7722 (516.7368)	attn_loss 510.6249 (506.9853)	hidden_loss 9.1472 (9.7516)	grad_norm 649.1224 (inf)	mem 26443MB
+[2021-09-22 23:26:49 swin_tiny_patch4_window7_224] (main.py 369): INFO EPOCH 3 training takes 0:25:05
+[2021-09-22 23:26:49 swin_tiny_patch4_window7_224] (utils.py 63): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_3.pth saving......
+[2021-09-22 23:26:50 swin_tiny_patch4_window7_224] (utils.py 65): INFO output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_3.pth saved !!!
+[2021-09-22 23:26:50 swin_tiny_patch4_window7_224] (main.py 231): INFO Training time 1:40:26
+[2021-09-22 23:42:11 swin_tiny_patch4_window7_224] (main.py 733): INFO Full config saved to output/swin_tiny_patch4_window7_224/test_inter_all_1e6/config.json
+[2021-09-22 23:42:11 swin_tiny_patch4_window7_224] (main.py 736): INFO AMP_OPT_LEVEL: O1
+AUG:
+  AUTO_AUGMENT: rand-m9-mstd0.5-inc1
+  COLOR_JITTER: 0.4
+  CUTMIX: 1.0
+  CUTMIX_MINMAX: null
+  MIXUP: 0.8
+  MIXUP_MODE: batch
+  MIXUP_PROB: 1.0
+  MIXUP_SWITCH_PROB: 0.5
+  RECOUNT: 1
+  REMODE: pixel
+  REPROB: 0.25
+BASE:
+- ''
+DATA:
+  BATCH_SIZE: 128
+  CACHE_MODE: part
+  DATASET: imagenet
+  DATA_PATH: /root/FastBaseline/data/imagenet
+  IMG_SIZE: 224
+  INTERPOLATION: bicubic
+  NUM_WORKERS: 8
+  PIN_MEMORY: true
+  ZIP_MODE: false
+DISTILL:
+  ACCUMULATE_STEPS: 0
+  ALPHA: 0.0
+  DO_DISTILL: true
+  LOAD_TAR: false
+  STAGE: -1
+  TEACHER: /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth
+  TEMPERATURE: 1.0
+  TRAIN_INTERMEDIATE: true
+EVAL_MODE: false
+LOCAL_RANK: 0
+MODEL:
+  DROP_PATH_RATE: 0.2
+  DROP_RATE: 0.0
+  LABEL_SMOOTHING: 0.1
+  NAME: swin_tiny_patch4_window7_224
+  NUM_CLASSES: 1000
+  RESUME: ''
+  SWIN:
+    APE: false
+    DEPTHS:
+    - 2
+    - 2
+    - 6
+    - 2
+    EMBED_DIM: 96
+    IN_CHANS: 3
+    MLP_RATIO: 4.0
+    NUM_HEADS:
+    - 3
+    - 6
+    - 12
+    - 24
+    PATCH_NORM: true
+    PATCH_SIZE: 4
+    QKV_BIAS: true
+    QK_SCALE: null
+    WINDOW_SIZE: 7
+  SWIN_MLP:
+    APE: false
+    DEPTHS:
+    - 2
+    - 2
+    - 6
+    - 2
+    EMBED_DIM: 96
+    IN_CHANS: 3
+    MLP_RATIO: 4.0
+    NUM_HEADS:
+    - 3
+    - 6
+    - 12
+    - 24
+    PATCH_NORM: true
+    PATCH_SIZE: 4
+    WINDOW_SIZE: 7
+  TYPE: swin_distill
+OUTPUT: output/swin_tiny_patch4_window7_224/test_inter_all_1e6
+PRINT_FREQ: 10
+SAVE_FREQ: 1
+SEED: 0
+TAG: test_inter_all_1e6
+TEST:
+  CROP: true
+THROUGHPUT_MODE: false
+TRAIN:
+  ACCUMULATION_STEPS: 0
+  AUTO_RESUME: true
+  BASE_LR: 1.0e-05
+  CLIP_GRAD: 5.0
+  EPOCHS: 1
+  LR_SCHEDULER:
+    DECAY_EPOCHS: 30
+    DECAY_RATE: 0.1
+    NAME: cosine
+  MIN_LR: 1.0e-05
+  OPTIMIZER:
+    BETAS:
+    - 0.9
+    - 0.999
+    EPS: 1.0e-08
+    MOMENTUM: 0.9
+    NAME: adamw
+  START_EPOCH: 0
+  USE_CHECKPOINT: false
+  WARMUP_EPOCHS: 20
+  WARMUP_LR: 1.0e-06
+  WEIGHT_DECAY: 0.05
+
+[2021-09-22 23:42:16 swin_tiny_patch4_window7_224] (main.py 129): INFO Loading teacher model:swin_distill//mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (main.py 135): INFO <All keys matched successfully>
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (main.py 139): INFO Creating model:swin_distill/swin_tiny_patch4_window7_224
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (main.py 142): INFO SwinTransformerDistill(
+  (patch_embed): PatchEmbed(
+    (proj): Conv2d(3, 96, kernel_size=(4, 4), stride=(4, 4))
+    (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+  )
+  (pos_drop): Dropout(p=0.0, inplace=False)
+  (layers): ModuleList(
+    (0): BasicLayerDistill(
+      dim=96, input_resolution=(56, 56), depth=2
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=96, input_resolution=(56, 56), num_heads=3, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=96, window_size=(7, 7), num_heads=3
+            (qkv): Linear(in_features=96, out_features=288, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=96, out_features=96, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): Identity()
+          (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=96, out_features=384, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=384, out_features=96, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=96, input_resolution=(56, 56), num_heads=3, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=96, window_size=(7, 7), num_heads=3
+            (qkv): Linear(in_features=96, out_features=288, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=96, out_features=96, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=96, out_features=384, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=384, out_features=96, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (downsample): PatchMerging(
+        input_resolution=(56, 56), dim=96
+        (reduction): Linear(in_features=384, out_features=192, bias=False)
+        (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (1): BasicLayerDistill(
+      dim=192, input_resolution=(28, 28), depth=2
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=192, input_resolution=(28, 28), num_heads=6, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=192, window_size=(7, 7), num_heads=6
+            (qkv): Linear(in_features=192, out_features=576, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=192, out_features=192, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=192, out_features=768, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=768, out_features=192, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=192, input_resolution=(28, 28), num_heads=6, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=192, window_size=(7, 7), num_heads=6
+            (qkv): Linear(in_features=192, out_features=576, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=192, out_features=192, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((192,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=192, out_features=768, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=768, out_features=192, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (downsample): PatchMerging(
+        input_resolution=(28, 28), dim=192
+        (reduction): Linear(in_features=768, out_features=384, bias=False)
+        (norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (2): BasicLayerDistill(
+      dim=384, input_resolution=(14, 14), depth=6
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (2): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (3): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (4): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (5): SwinTransformerBlockDistill(
+          dim=384, input_resolution=(14, 14), num_heads=12, window_size=7, shift_size=3, mlp_ratio=4.0
+          (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=384, window_size=(7, 7), num_heads=12
+            (qkv): Linear(in_features=384, out_features=1152, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=384, out_features=384, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=384, out_features=1536, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=1536, out_features=384, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (downsample): PatchMerging(
+        input_resolution=(14, 14), dim=384
+        (reduction): Linear(in_features=1536, out_features=768, bias=False)
+        (norm): LayerNorm((1536,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (3): BasicLayerDistill(
+      dim=768, input_resolution=(7, 7), depth=2
+      (blocks): ModuleList(
+        (0): SwinTransformerBlockDistill(
+          dim=768, input_resolution=(7, 7), num_heads=24, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=768, window_size=(7, 7), num_heads=24
+            (qkv): Linear(in_features=768, out_features=2304, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=768, out_features=768, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=768, out_features=3072, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=3072, out_features=768, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+        (1): SwinTransformerBlockDistill(
+          dim=768, input_resolution=(7, 7), num_heads=24, window_size=7, shift_size=0, mlp_ratio=4.0
+          (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (attn): WindowAttentionDistill(
+            dim=768, window_size=(7, 7), num_heads=24
+            (qkv): Linear(in_features=768, out_features=2304, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=768, out_features=768, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (softmax): Softmax(dim=-1)
+          )
+          (drop_path): DropPath()
+          (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=768, out_features=3072, bias=True)
+            (act): GELU()
+            (fc2): Linear(in_features=3072, out_features=768, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+    )
+  )
+  (norm): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+  (avgpool): AdaptiveAvgPool1d(output_size=1)
+  (head): Linear(in_features=768, out_features=1000, bias=True)
+  (fit_dense_C): ModuleList(
+    (0): Linear(in_features=96, out_features=192, bias=True)
+    (1): Linear(in_features=192, out_features=384, bias=True)
+    (2): Linear(in_features=384, out_features=768, bias=True)
+    (3): Linear(in_features=768, out_features=1536, bias=True)
+  )
+  (fit_dense_M): ModuleList(
+    (0): Linear(in_features=3, out_features=6, bias=True)
+    (1): Linear(in_features=6, out_features=12, bias=True)
+    (2): Linear(in_features=12, out_features=24, bias=True)
+    (3): Linear(in_features=24, out_features=48, bias=True)
+  )
+)
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (main.py 152): INFO number of params: 29859574
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (main.py 155): INFO number of GFLOPs: 4.49440512
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (main.py 182): INFO auto resuming from output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_3.pth
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (utils.py 20): INFO ==============> Resuming form output/swin_tiny_patch4_window7_224/test_inter_all_1e6/ckpt_epoch_3.pth....................
+[2021-09-22 23:42:21 swin_tiny_patch4_window7_224] (utils.py 27): INFO <All keys matched successfully>
+[2021-09-22 23:42:31 swin_tiny_patch4_window7_224] (main.py 601): INFO Test: [0/49]	Time 9.764 (9.764)	Loss 514.4556 (514.4556)	Attention Loss 505.0637 (505.0637)	Hidden Loss 9.3919 (9.3919)	Attention_Loss_0 293.6962 (293.6962)	Attention_Loss_1 429.6739 (429.6739)	Attention_Loss_2 764.1659 (764.1659)	Attention_Loss_3 14.5146 (14.5146)	Hidden_Loss_0 1.5501 (1.5501)	Hidden_Loss_1 2.3908 (2.3908)	Hidden_Loss_2 2.0487 (2.0487)	Hidden_Loss_3 46.2644 (46.2644)	Mem 9282MB
+[2021-09-22 23:42:47 swin_tiny_patch4_window7_224] (main.py 601): INFO Test: [10/49]	Time 1.614 (2.360)	Loss 521.5191 (517.2756)	Attention Loss 511.9211 (507.8139)	Hidden Loss 9.5980 (9.4617)	Attention_Loss_0 295.1058 (293.7585)	Attention_Loss_1 444.6427 (433.4258)	Attention_Loss_2 772.4323 (768.3873)	Attention_Loss_3 14.4815 (14.5370)	Hidden_Loss_0 1.5673 (1.5542)	Hidden_Loss_1 2.3557 (2.3785)	Hidden_Loss_2 2.0213 (2.0345)	Hidden_Loss_3 47.6010 (46.7340)	Mem 9731MB
+[2021-09-22 23:43:03 swin_tiny_patch4_window7_224] (main.py 601): INFO Test: [20/49]	Time 1.600 (2.001)	Loss 517.9667 (517.5519)	Attention Loss 508.4179 (508.0902)	Hidden Loss 9.5488 (9.4616)	Attention_Loss_0 294.8130 (293.6627)	Attention_Loss_1 434.4517 (434.1561)	Attention_Loss_2 768.8923 (768.7234)	Attention_Loss_3 14.5657 (14.5525)	Hidden_Loss_0 1.5541 (1.5499)	Hidden_Loss_1 2.3945 (2.3849)	Hidden_Loss_2 2.0427 (2.0385)	Hidden_Loss_3 47.2159 (46.7196)	Mem 9731MB
+[2021-09-22 23:43:20 swin_tiny_patch4_window7_224] (main.py 601): INFO Test: [30/49]	Time 1.599 (1.875)	Loss 519.3582 (517.5196)	Attention Loss 509.8784 (508.0538)	Hidden Loss 9.4798 (9.4658)	Attention_Loss_0 296.5472 (293.8297)	Attention_Loss_1 433.9319 (433.5349)	Attention_Loss_2 771.4125 (768.8020)	Attention_Loss_3 14.5538 (14.5522)	Hidden_Loss_0 1.5351 (1.5488)	Hidden_Loss_1 2.3810 (2.3848)	Hidden_Loss_2 2.0505 (2.0402)	Hidden_Loss_3 46.8114 (46.7407)	Mem 9731MB
+[2021-09-22 23:43:36 swin_tiny_patch4_window7_224] (main.py 601): INFO Test: [40/49]	Time 1.602 (1.808)	Loss 517.5278 (517.5368)	Attention Loss 508.1782 (508.0811)	Hidden Loss 9.3496 (9.4557)	Attention_Loss_0 300.8755 (293.7677)	Attention_Loss_1 434.6634 (433.5206)	Attention_Loss_2 766.3242 (768.8804)	Attention_Loss_3 14.5577 (14.5569)	Hidden_Loss_0 1.5150 (1.5468)	Hidden_Loss_1 2.3904 (2.3857)	Hidden_Loss_2 2.0477 (2.0418)	Hidden_Loss_3 46.0493 (46.6765)	Mem 9731MB
+[2021-09-22 23:43:48 swin_tiny_patch4_window7_224] (main.py 645): INFO  * Loss 517.612  Attention Loss 508.151  Hidden Loss 9.462  Attention_Loss_0 293.896 Attention_Loss_1 433.875 Attention_Loss_2 768.859 Attention_Loss_3 14.558 Hidden_Loss_0 1.547 Hidden_Loss_1 2.385 Hidden_Loss_2 2.042 Hidden_Loss_3 46.712
+[2021-09-22 23:43:48 swin_tiny_patch4_window7_224] (main.py 201): INFO Start training
+[2021-09-22 23:43:48 swin_tiny_patch4_window7_224] (main.py 266): INFO Training stage: -1...
