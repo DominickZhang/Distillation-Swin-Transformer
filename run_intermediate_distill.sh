@@ -3,8 +3,8 @@ set -e
 
 epoch_num_interm=100
 epoch_num_pred=200
-output_dir="output/test_relation_all"
-#output_dir="/mnt/configblob/users/v-jinnian/swin_distill/relation_baseline/"
+#output_dir="output/test_relation_all"
+output_dir="/mnt/configblob/users/v-jinnian/swin_distill/relation_baseline/"
 base_lr=5e-5
 ar=64
 data_path="/root/FastBaseline/data/imagenet"
