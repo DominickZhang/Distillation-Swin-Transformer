@@ -6,9 +6,9 @@ epoch_num_pred=200
 #output_dir="output/test_relation_all"
 output_dir="/mnt/configblob/users/v-jinnian/swin_distill/relation_baseline/"
 base_lr=5e-4
-ar=48
+ar=64
 data_path="/root/FastBaseline/data/imagenet"
-teacher="/mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth"
+teacher="/mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_base_patch4_window7_224_22kto1k.pth"
 student_layer_list="[11]"
 teacher_layer_list="[23]"
 
