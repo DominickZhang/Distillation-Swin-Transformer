@@ -681,6 +681,10 @@ def validate(config, data_loader, model, logger, is_intermediate=False, model_te
     layer_id_t_list = config.DISTILL.TEACHER_LAYER_LIST
     ar = config.DISTILL.AR
 
+    if dist.dist.get_rank():
+        print(layer_id_s_list, type(layer_id_s_list))
+        print(layer_id_t_list, type(layer_id_t_list))
+
     criterion = torch.nn.CrossEntropyLoss()
     model.eval()
 
@@ -828,7 +832,7 @@ if __name__ == '__main__':
     # CUDA_VISIBLE_DEVICES=4,5,6,7 python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_all --train_intermediate --stage -1
     # python3 -m torch.distributed.launch --nproc_per_node 8 --master_port 1234 main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_prog_$i --resume output/test_inter_prog/test_inter_prog_$i/ckpt_epoch_1.pth --train_intermediate --stage $i --output output/test_inter_prog
     #### distillation with relation loss
-    #python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_all --train_intermediate --ar 48
+    #python -m torch.distributed.launch --nproc_per_node 8 --master_port 1234  main.py --do_distill --cfg configs/swin_tiny_patch4_window7_224_distill_intermediate.yaml --data-path /root/FastBaseline/data/imagenet --teacher /mnt/configblob/users/v-jinnian/swin_distill/trained_models/swin_large_patch4_window7_224_22kto1k.pth --batch-size 128 --tag test_inter_all --train_intermediate --ar 48 --student_layer_list [11] --teacher_layer_list [0]
     
 
     _, config = parse_option()
