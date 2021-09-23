@@ -66,7 +66,7 @@ class WindowAttentionRelation(nn.Module):
         q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
 
         ## output q, k, v
-        qkv_out = qkv_tmp.reshpae(B_, N, 3, C).permute(2, 0, 1, 3)
+        qkv_out = qkv_tmp.reshape(B_, N, 3, C).permute(2, 0, 1, 3)
 
         q = q * self.scale
         attn = (q @ k.transpose(-2, -1))
