@@ -93,10 +93,11 @@ def soft_cross_entropy(predicts, targets):
             targets_prob = torch.nn.functional.softmax(targets, dim=-1)
             #print('teacher:', torch.max(targets_prob), torch.argmax(targets_prob))
             #print('student:', torch.max(student_likelihood), torch.argmax(targets_prob))
-            #loss_batch = torch.sum(- targets_prob * student_likelihood, dim=-1)
+            loss_batch = torch.sum(- targets_prob * student_likelihood, dim=-1)
             #print(loss, targets_prob.shape, loss.mean())
             #input()
-            return (- targets_prob * student_likelihood).mean()
+            #return (- targets_prob * student_likelihood).mean()
+            return loss_batch.mean()
 
 def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
     layer_num = len(student_attn_list)
@@ -117,6 +118,8 @@ def cal_relation_loss(student_attn_list, teacher_attn_list, Ar):
                     print(student_att[j].max(), student_att[j].min())
                     print(teacher_att[i].max(), teacher_att[i].min())
                     print(teacher_att[j].max(), teacher_att[j].min())
+                    print(student_att[i].shape, student_att[j].shape)
+                    print(teacher_att[i].shape, teacher_att[j].shape)
                     print(i, j, '-'*20)
     input('paused!')
     return relation_loss/(9. * layer_num)
