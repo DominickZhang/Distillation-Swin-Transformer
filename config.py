@@ -265,8 +265,8 @@ def update_config(config, args):
     if args.resume_weight_only:
         config.DISTILL.RESUME_WEIGHT_ONLY = args.resume_weight_only
     config.DISTILL.ALPHA = args.alpha
-    config.DISTILL.STUDENT_LAYER_LIST = [ int(i) for i in args.student_layer_list.strip('[').strip(']').split(',') ]
-    config.DISTILL.TEACHER_LAYER_LIST = [ int(i) for i in args.teacher_layer_list.strip('[').strip(']').split(',') ]
+    config.DISTILL.STUDENT_LAYER_LIST = [ int(i) for i in args.student_layer_list.strip('[').strip(']').split('_') ]
+    config.DISTILL.TEACHER_LAYER_LIST = [ int(i) for i in args.teacher_layer_list.strip('[').strip(']').split('_') ]
     config.TRAIN.EPOCHS = args.total_train_epoch
     config.TRAIN.BASE_LR = args.base_lr
 
