@@ -53,6 +53,8 @@ def main():
     alpha5 = get_train_info(alpha5_file)
     ref = get_train_info(ref_file)
 
+    print(len(alpha0['acc1']), len(alpha5['acc1']), len(ref['acc1']))
+
     x_axis = np.arange(len(alpha0['acc1']))
     save_plot(x_axis, np.stack([np.array(alpha0['acc1']), np.array(alpha5['acc1']), np.array(ref['acc1'])], axis=1), 'output/acc1.png', transparent=False, marker_color_list=['b-', 'r-', 'g-'], legend=['alpha=0.', 'alpha=0.5', 'ref'])
 
