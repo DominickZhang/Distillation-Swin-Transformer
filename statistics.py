@@ -52,11 +52,12 @@ def main():
     alpha0 = get_train_info(alpha0_file)
     alpha5 = get_train_info(alpha5_file)
     ref = get_train_info(ref_file)
+    type = 'acc5'
 
-    print(len(alpha0['acc1']), len(alpha5['acc1']), len(ref['acc1']))
+    print(len(alpha0[type]), len(alpha5[type]), len(ref[type]))
 
-    x_axis = np.arange(len(alpha0['acc1']))
-    save_plot(x_axis, np.stack([np.array(alpha0['acc1']), np.array(alpha5['acc1']), np.array(ref['acc1'])], axis=1), 'stat_images/acc1.png', transparent=False, marker_color_list=['b-', 'r-', 'g-'], legend=['alpha=0.', 'alpha=0.5', 'ref'])
+    x_axis = np.arange(len(alpha0[type]))
+    save_plot(x_axis, np.stack([np.array(alpha0[type]), np.array(alpha5[type]), np.array(ref[type])], axis=1), 'stat_images/%s.png'%type, transparent=False, marker_color_list=['b-', 'r-', 'g-'], legend=['alpha=0.', 'alpha=0.5', 'ref'])
 
     '''
     #train_info_org = get_train_info(log_name)
