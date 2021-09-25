@@ -24,8 +24,8 @@ def acc_analysis(line):
 
 def main():
     log_name = 'logs/Swin-T-train-log-reference.txt'
-    if not os.path.exists('output'):
-        os.mkdir('output')
+    if not os.path.exists('stat_images'):
+        os.mkdir('stat_images')
     def get_train_info(log_name):
         train_info = {'loss': {}, 'lr': {}, 'acc1':[], 'acc5': []} # loss {'epoch', 'step'}, learning rate
         with open(log_name, "r") as f:
@@ -56,7 +56,7 @@ def main():
     print(len(alpha0['acc1']), len(alpha5['acc1']), len(ref['acc1']))
 
     x_axis = np.arange(len(alpha0['acc1']))
-    save_plot(x_axis, np.stack([np.array(alpha0['acc1']), np.array(alpha5['acc1']), np.array(ref['acc1'])], axis=1), 'output/acc1.png', transparent=False, marker_color_list=['b-', 'r-', 'g-'], legend=['alpha=0.', 'alpha=0.5', 'ref'])
+    save_plot(x_axis, np.stack([np.array(alpha0['acc1']), np.array(alpha5['acc1']), np.array(ref['acc1'])], axis=1), 'stat_images/acc1.png', transparent=False, marker_color_list=['b-', 'r-', 'g-'], legend=['alpha=0.', 'alpha=0.5', 'ref'])
 
     '''
     #train_info_org = get_train_info(log_name)
