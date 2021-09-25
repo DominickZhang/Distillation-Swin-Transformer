@@ -29,8 +29,10 @@ def save_plot(x, array, output_name, title=None, legend=None, x_label=None, y_la
 	fig = plt.figure()
 	ax = fig.add_subplot(1, 1, 1)
 	line_plot(ax, x, array, title, legend, x_label, y_label, marker_color_list)
-	plt.savefig(output_name, dpi=2000, transparent=transparent)
+	#plt.savefig(output_name, dpi=2000, transparent=transparent)
+	plt.savefig(output_name, transparent=transparent)
 	plt.close()
+	#plt.show()
 
 def line_plot(ax, x, array, title=None, legend=None, x_label=None, y_label=None, marker_color_list=None):
 	## array: len(x) x N
