@@ -8,7 +8,7 @@ def main():
     trial_list = [0, 1]
     data = {}
     for trial_id in trial_list:
-        folder_name = '/output/swin_tiny_patch4_window7_224/debug_da_trial_%d'%trial_id
+        folder_name = 'output/swin_tiny_patch4_window7_224/debug_da_trial_%d'%trial_id
         data[trial_id] = {'sample': [], 'target': []}
         for rank in range(8):
             for iter in range(10):
