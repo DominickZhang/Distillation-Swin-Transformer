@@ -21,7 +21,7 @@ def main():
         print(target_0, target_1)
         print('-'*20)
     '''
-    for sample_0, sample_1 in zip(data[0]['sample'], data[2]['sample']):
+    for sample_0, sample_1 in zip(data[3]['sample'], data[4]['sample']):
         print(torch.sum((sample_0-sample_1)**2))
         print('-'*20)
 
