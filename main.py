@@ -319,6 +319,9 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
     start = time.time()
     end = time.time()
 
+    print(len(data_loader))
+    input('debug')
+
     for idx, (samples, targets) in enumerate(data_loader):
         '''
         filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_iter_%d.pth"%(dist.get_rank(), idx))
