@@ -883,7 +883,7 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     np.random.seed(seed)
     cudnn.benchmark = True
-    random.seed(seed)
+    #random.seed(seed)
 
     # linear scale the learning rate according to total batch size, may not be optimal
     linear_scaled_lr = config.TRAIN.BASE_LR * config.DATA.BATCH_SIZE * dist.get_world_size() / 512.0
