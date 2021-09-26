@@ -155,6 +155,9 @@ def cal_intermediate_loss(student_attn_list, student_hidden_list,
 def main(config):
     dataset_train, dataset_val, data_loader_train, data_loader_val, mixup_fn = build_loader(config)
 
+    print(dataset_train)
+    input('debug')
+
     if config.DISTILL.DO_DISTILL:
         logger.info(f"Loading teacher model:{config.MODEL.TYPE}/{config.DISTILL.TEACHER}")
         model_teacher = load_teacher_model(type='base')
