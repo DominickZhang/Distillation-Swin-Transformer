@@ -403,6 +403,7 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
+    exit('Debug mode......')
 
 
 
