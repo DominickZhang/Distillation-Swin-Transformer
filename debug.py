@@ -11,7 +11,7 @@ def test_teacher_logits_dist():
         print(epoch)
         data = torch.load('output/swin_tiny_patch4_window7_224/debug_da_trial_11/sample_target_rank_0_epoch_%d.pth'%epoch)
         target_index = torch.argmax(data['output'], axis=1)
-        if target_index[0].item() in [979]:
+        if target_index[0].item() in [979, 940]:
             data_dict[959].append(data['output'][0].tolist())
         else:
             data_dict[target_index[0].item()].append(data['output'][0].tolist())
