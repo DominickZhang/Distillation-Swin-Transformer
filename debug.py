@@ -16,8 +16,13 @@ def main():
                 data_dict = torch.load(filename)
                 data[trial_id]['sample'].append(data_dict['samples'])
                 data[trial_id]['target'].append(data_dict['targets'])
+    '''
     for target_0, target_1 in zip(data[0]['target'], data[1]['target']):
         print(target_0, target_1)
+        print('-'*20)
+    '''
+    for sample_0, sample_1 in zip(data[0]['sample'], data[1]['sample']):
+        print(torch.sum((sample_0-sample_1)**2))
         print('-'*20)
 
 if __name__ == '__main__':
