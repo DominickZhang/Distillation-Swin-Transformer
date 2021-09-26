@@ -450,6 +450,9 @@ class SwinTransformerRelation(nn.Module):
                     if layer_id in layer_id_list:
                         qkv_tuple_return_list.append(qkv_tuple)
                     layer_id += 1
+            x = self.norm(x)  # B L C
+            x = self.avgpool(x.transpose(1, 2))  # B C 1
+            x = torch.flatten(x, 1)
             return x, qkv_tuple_return_list
         elif len(layer_id_list) > 0:
             x = self.patch_embed(x)   # self.patch_embed
