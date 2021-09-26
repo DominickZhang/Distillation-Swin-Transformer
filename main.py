@@ -1,3 +1,4 @@
+
 # --------------------------------------------------------
 # Swin Transformer
 # Copyright (c) 2021 Microsoft
@@ -29,6 +30,8 @@ from utils import load_checkpoint, save_checkpoint, get_grad_norm, auto_resume_h
 #from models.swin_transformer import SwinTransformer
 #from models.swin_transformer_distill_jinnian import SwinTransformerDistill
 from models.swin_transformer_distill_relation import SwinTransformerRelation
+
+import random
 
 try:
     # noinspection PyUnresolvedReferences
@@ -317,6 +320,13 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
     end = time.time()
 
     for idx, (samples, targets) in enumerate(data_loader):
+        filename = "sample_target_rank_%d_iter_%d.pth"%(dist.get_rank(), idx)
+        sample_target_data = {
+            "samples": samples,
+            "targets": targets
+        }
+        torch.save(sample_target_data, filename)
+        
         if idx > 10:
             break
         samples = samples.cuda(non_blocking=True)
@@ -872,6 +882,7 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     np.random.seed(seed)
     cudnn.benchmark = True
+    random.seed(seed)
 
     # linear scale the learning rate according to total batch size, may not be optimal
     linear_scaled_lr = config.TRAIN.BASE_LR * config.DATA.BATCH_SIZE * dist.get_world_size() / 512.0
