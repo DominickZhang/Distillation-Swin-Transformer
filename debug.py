@@ -24,12 +24,15 @@ def test_teacher_logits_dist():
         else:
             data_dict[target_index[1].item()].append(data['output'][1].tolist())
         '''
+    print(data_dict[0][0])
+    '''
     print(len(data_dict[0]), len(data_dict[1]))
     std0 = np.std(np.array(data_dict[0]), axis=0)
     print(np.max(std0), np.min(std0), np.mean(std0))
     print('-'*20)
     std1 = np.std(np.array(data_dict[1]), axis=0)
     print(np.max(std1), np.min(std1), np.mean(std1))
+    '''
 
 
 
