@@ -155,8 +155,10 @@ def cal_intermediate_loss(student_attn_list, student_hidden_list,
 def main(config):
     dataset_train, dataset_val, data_loader_train, data_loader_val, mixup_fn = build_loader(config)
 
+    '''
     print(len(data_loader_train), mixup_fn)
     input('debug')
+    '''
 
     if config.DISTILL.DO_DISTILL:
         logger.info(f"Loading teacher model:{config.MODEL.TYPE}/{config.DISTILL.TEACHER}")
@@ -322,9 +324,6 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
     start = time.time()
     end = time.time()
 
-    print(len(data_loader))
-    input('debug')
-
     for idx, (samples, targets) in enumerate(data_loader):
         '''
         filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_iter_%d.pth"%(dist.get_rank(), idx))
@@ -348,7 +347,9 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
             qkv_t = model_teacher(samples, layer_id_t_list)
             filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_epoch_%d.pth"%(dist.get_rank(), idx))
             output = model_teacher(samples)
-            torch.save(output, filename)
+            data_save = {'output': output, 'targets': targets}
+            print('saving: %s'%filename)
+            torch.save(data_save, filename)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
             loss = criterion(qkv_s, qkv_t, config.DISTILL.AR)
