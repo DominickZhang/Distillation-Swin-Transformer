@@ -3,8 +3,25 @@
 # test dev
 import torch
 import os
+import numpy as np
 
-def main():
+def test_teacher_logits_dist():
+    data_dict = {959: [], 839: []}
+    for epoch in range(300):
+        data = torch.load('output/swin_tiny_patch4_window7_224/debug_da_trial_11/ sample_target_rank_0_epoch_%d'%epoch)
+        target_index = torch.argmax(data['output'], axis=1)
+        data_dict[target_index[0].item()].append(data['output'][0].tolist())
+        data_dict[target_index[1].item()].append(data['output'][1].tolist())
+    print(len(data_dict[0]), len(data_dict[1]))
+    std0 = np.std(np.array(data_dict[0]), axis=0)
+    print(std0, np.max(std0), np.min(std0), np.mean(std0))
+    print('-'*20)
+    std1 = np.std(np.array(data_dict[1]), axis=0)
+    print(std1, np.max(std1), np.min(std1), np.mean(std1))
+
+
+
+def test_da_random_seed():
     trial_list = [9, 10]
     data = {}
     for trial_id in trial_list:
@@ -26,4 +43,6 @@ def main():
         print('-'*20)
 
 if __name__ == '__main__':
-    main()
+    #main()
+    #test_da_random_seed()
+    test_teacher_logits_dist()
