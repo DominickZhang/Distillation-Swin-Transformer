@@ -320,15 +320,16 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
     end = time.time()
 
     for idx, (samples, targets) in enumerate(data_loader):
+        '''
         filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_iter_%d.pth"%(dist.get_rank(), idx))
         sample_target_data = {
             "samples": samples,
             "targets": targets
         }
         torch.save(sample_target_data, filename)
-        
         if idx > 10:
             break
+        '''
         samples = samples.cuda(non_blocking=True)
         targets = targets.cuda(non_blocking=True)
 
@@ -339,6 +340,9 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
 
         with torch.no_grad():
             qkv_t = model_teacher(samples, layer_id_t_list)
+            filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_epoch_%d.pth"%(dist.get_rank(), idx))
+            output = model_teacher(samples)
+            torch.save(output, filename)
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
             loss = criterion(qkv_s, qkv_t, config.DISTILL.AR)
@@ -403,7 +407,7 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
                 f'mem {memory_used:.0f}MB')
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
-    exit('Debug mode......')
+    #exit('Debug mode......')
 
 
 
@@ -882,7 +886,7 @@ if __name__ == '__main__':
     seed = config.SEED + dist.get_rank()
     torch.manual_seed(seed)
     np.random.seed(seed)
-    #cudnn.benchmark = True
+    cudnn.benchmark = True
     #random.seed(seed)
 
     # linear scale the learning rate according to total batch size, may not be optimal
