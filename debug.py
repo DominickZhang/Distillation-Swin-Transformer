@@ -5,7 +5,7 @@ import torch
 import os
 
 def main():
-    trial_list = [7, 8]
+    trial_list = [9, 10]
     data = {}
     for trial_id in trial_list:
         folder_name = 'output/swin_tiny_patch4_window7_224/debug_da_trial_%d'%trial_id
@@ -21,7 +21,7 @@ def main():
         print(target_0, target_1)
         print('-'*20)
     '''
-    for sample_0, sample_1 in zip(data[7]['sample'], data[8]['sample']):
+    for sample_0, sample_1 in zip(data[trial_list[0]]['sample'], data[trial_list[1]]['sample']):
         print(torch.sum((sample_0-sample_1)**2))
         print('-'*20)
 

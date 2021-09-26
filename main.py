@@ -881,7 +881,7 @@ if __name__ == '__main__':
 
     seed = config.SEED + dist.get_rank()
     torch.manual_seed(seed)
-    #np.random.seed(seed)
+    np.random.seed(seed)
     #cudnn.benchmark = True
     #random.seed(seed)
 
