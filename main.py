@@ -345,7 +345,7 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
 
         with torch.no_grad():
             qkv_t = model_teacher(samples, layer_id_t_list)
-            filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_epoch_%d.pth"%(dist.get_rank(), idx))
+            filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_epoch_%d.pth"%(dist.get_rank(), epoch))
             output = model_teacher(samples)
             data_save = {'output': output, 'targets': targets}
             print('saving: %s'%filename)
