@@ -465,8 +465,10 @@ class SwinTransformerRelation(nn.Module):
             x = torch.flatten(x, 1)
             return x, []
 
-    def forward(self, x, layer_id_list=[]):
+    def forward(self, x, layer_id_list=[], is_joint_distill=False):
         x, qkv_tuple_list = self.forward_features(x, layer_id_list)
+        if is_joint_distill:
+            return self.head(x), qkv_tuple_list
         if len(layer_id_list) > 0:
             return qkv_tuple_list
         else:

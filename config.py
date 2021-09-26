@@ -197,6 +197,7 @@ _C.DISTILL.PROGRESSIVE = False
 _C.DISTILL.STUDENT_LAYER_LIST = []
 _C.DISTILL.TEACHER_LAYER_LIST = []
 _C.DISTILL.RESUME_WEIGHT_ONLY = False
+_C.DISTILL.JOINT_DISTILL = False
 
 def _update_config_from_file(config, cfg_file):
     config.defrost()
@@ -264,6 +265,8 @@ def update_config(config, args):
         config.DISTILL.PROGRESSIVE = args.progressive
     if args.resume_weight_only:
         config.DISTILL.RESUME_WEIGHT_ONLY = args.resume_weight_only
+    if args.joint_distill:
+        config.DISTILL.JOINT_DISTILL = args.joint_distill
     config.DISTILL.ALPHA = args.alpha
     config.DISTILL.STUDENT_LAYER_LIST = [ int(i) for i in args.student_layer_list.strip('[').strip(']').split('_') ]
     config.DISTILL.TEACHER_LAYER_LIST = [ int(i) for i in args.teacher_layer_list.strip('[').strip(']').split('_') ]

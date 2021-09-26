@@ -89,6 +89,7 @@ def parse_option():
     parser.add_argument('--total_train_epoch', default=300, type=int, help='the total number of epochs for training')
     parser.add_argument('--resume_weight_only', action='store_true', help='whether to only restore weight, used for initialization of multi-stage training')
     parser.add_argument('--base_lr', default=5e-4, type=float, help='the base learning rate')
+    parser.add_argument('--joint_distill', action='store_true', help='whether to apply joint knowledge distillation')
 
     args, unparsed = parser.parse_known_args()
 
@@ -191,10 +192,15 @@ def main(config):
 
     if config.DISTILL.TRAIN_INTERMEDIATE:
         lr_scheduler = None
-        criterion_soft = cal_relation_loss
+        criterion_intermediate = cal_relation_loss
+    elif config.DISTILL.JOINT_DISTILL:
+        lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
+        criterion_soft = soft_cross_entropy
+        criterion_intermediate = cal_relation_loss
     else:
         lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
         criterion_soft = soft_cross_entropy
+
 
     if config.AUG.MIXUP > 0.:
         # smoothing is handled with mixup label transform
@@ -242,9 +248,18 @@ def main(config):
     for epoch in range(config.TRAIN.START_EPOCH, config.TRAIN.EPOCHS):
         data_loader_train.sampler.set_epoch(epoch)
         if config.DISTILL.DO_DISTILL and config.DISTILL.TRAIN_INTERMEDIATE:
-            train_one_epoch_intermediate(config, model, model_teacher, criterion_soft, data_loader_train, optimizer, epoch, mixup_fn)
+            train_one_epoch_intermediate(config, model, model_teacher, criterion_intermediate, data_loader_train, optimizer, epoch, mixup_fn)
             if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
                 save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
+        elif config.DISTILL.DO_DISTILL and config.DISTILL.JOINT_DISTILL:
+            train_one_epoch_joint(config, model, model_teacher, data_loader_train, optimizer, epoch, mixup_fn, lr_scheduler, criterion_soft=criterion_soft, criterion_truth=criterion_truth, criterion_intermediate=criterion_intermediate)
+            if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
+                save_checkpoint(config, epoch, model_without_ddp, max_accuracy, optimizer, lr_scheduler, logger)
+
+            acc1, acc5, loss = validate(config, data_loader_val, model, logger)
+            logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
+            max_accuracy = max(max_accuracy, acc1)
+            logger.info(f'Max accuracy: {max_accuracy:.2f}%')
         elif config.DISTILL.DO_DISTILL:
             train_one_epoch_distill(config, model, model_teacher, data_loader_train, optimizer, epoch, mixup_fn, lr_scheduler, criterion_soft=criterion_soft, criterion_truth=criterion_truth)
             if dist.get_rank() == 0 and (epoch % config.SAVE_FREQ == 0 or epoch == (config.TRAIN.EPOCHS - 1)):
@@ -305,6 +320,111 @@ def load_teacher_model(type='large'):
                                 )
     return model
 
+def train_one_epoch_joint(config, model, model_teacher, data_loader, optimizer, epoch, mixup_fn, lr_scheduler, criterion_soft=None, criterion_truth=None, criterion_intermediate=None):
+    layer_id_s_list = config.DISTILL.STUDENT_LAYER_LIST
+    layer_id_t_list = config.DISTILL.TEACHER_LAYER_LIST
+
+    model.train()
+    optimizer.zero_grad()
+
+    model_teacher.eval()
+
+    num_steps = len(data_loader)
+    batch_time = AverageMeter()
+    loss_meter = AverageMeter()
+    norm_meter = AverageMeter()
+    loss_soft_meter = AverageMeter()
+    loss_truth_meter = AverageMeter()
+    loss_intermediate_meter = AverageMeter()
+
+    start = time.time()
+    end = time.time()
+    for idx, (samples, targets) in enumerate(data_loader):
+        samples = samples.cuda(non_blocking=True)
+        targets = targets.cuda(non_blocking=True)
+
+        if mixup_fn is not None:
+            samples, targets = mixup_fn(samples, targets)
+
+        outputs, qkv_s = model(samples, layer_id_s_list, is_joint_distill=True)
+
+        with torch.no_grad():
+            outputs_teacher, qkv_t = model_teacher(samples, layer_id_t_list, is_joint_distill=True)
+
+        if config.TRAIN.ACCUMULATION_STEPS > 1:
+            loss_truth = config.DISTILL.ALPHA*criterion_truth(outputs, targets)
+            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion_soft(outputs/config.DISTILL.TEMPERATURE, outputs_teacher/config.DISTILL.TEMPERATURE)
+            loss_intermediate = criterion_intermediate(qkv_s, qkv_t, config.DISTILL.AR)
+            loss = loss_truth + loss_soft + loss_intermediate
+
+            loss = loss / config.TRAIN.ACCUMULATION_STEPS
+            if config.AMP_OPT_LEVEL != "O0":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(amp.master_params(optimizer))
+            else:
+                loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(model.parameters())
+            if (idx + 1) % config.TRAIN.ACCUMULATION_STEPS == 0:
+                optimizer.step()
+                optimizer.zero_grad()
+                lr_scheduler.step_update(epoch * num_steps + idx)
+        else:
+            loss_truth = config.DISTILL.ALPHA*criterion_truth(outputs, targets)
+            loss_soft = (1.0 - config.DISTILL.ALPHA)*criterion_soft(outputs/config.DISTILL.TEMPERATURE, outputs_teacher/config.DISTILL.TEMPERATURE)
+            loss_intermediate = criterion_intermediate(qkv_s, qkv_t, config.DISTILL.AR)
+            loss = loss_truth + loss_soft + loss_intermediate
+
+            optimizer.zero_grad()
+            if config.AMP_OPT_LEVEL != "O0":
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(amp.master_params(optimizer))
+            else:
+                loss.backward()
+                if config.TRAIN.CLIP_GRAD:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.TRAIN.CLIP_GRAD)
+                else:
+                    grad_norm = get_grad_norm(model.parameters())
+            optimizer.step()
+            lr_scheduler.step_update(epoch * num_steps + idx)
+
+        torch.cuda.synchronize()
+
+        loss_meter.update(loss.item(), targets.size(0))
+        loss_soft_meter.update(loss_soft.item(), targets.size(0))
+        loss_truth_meter.update(loss_truth.item(), targets.size(0))
+        loss_intermediate_meter.update(loss_intermediate.item(), targets.size(0))
+        norm_meter.update(grad_norm)
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if idx % config.PRINT_FREQ == 0:
+            lr = optimizer.param_groups[0]['lr']
+            memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+            etas = batch_time.avg * (num_steps - idx)
+            logger.info(
+                f'Train: [{epoch}/{config.TRAIN.EPOCHS}][{idx}/{num_steps}]\t'
+                f'eta {datetime.timedelta(seconds=int(etas))} lr {lr:.6f}\t'
+                f'time {batch_time.val:.4f} ({batch_time.avg:.4f})\t'
+                f'loss {loss_meter.val:.4f} ({loss_meter.avg:.4f})\t'
+                f'loss_soft {loss_soft_meter.val:.4f} ({loss_soft_meter.avg:.4f})\t'
+                f'loss_truth {loss_truth_meter.val:.4f} ({loss_truth_meter.avg:.4f})\t'
+                f'loss_intermediate {loss_intermediate_meter.val:.4f} ({loss_intermediate_meter.avg:.4f})\t'
+                f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
+                f'mem {memory_used:.0f}MB')
+    epoch_time = time.time() - start
+    logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
+
 def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler=None):
     layer_id_s_list = config.DISTILL.STUDENT_LAYER_LIST
     layer_id_t_list = config.DISTILL.TEACHER_LAYER_LIST
@@ -345,11 +465,13 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
 
         with torch.no_grad():
             qkv_t = model_teacher(samples, layer_id_t_list)
+            '''
             filename = os.path.join(config.OUTPUT, "sample_target_rank_%d_epoch_%d.pth"%(dist.get_rank(), epoch))
             output = model_teacher(samples)
             data_save = {'output': output, 'targets': targets}
             print('saving: %s'%filename)
             torch.save(data_save, filename)
+            '''
 
         if config.TRAIN.ACCUMULATION_STEPS > 1:
             loss = criterion(qkv_s, qkv_t, config.DISTILL.AR)
@@ -415,8 +537,6 @@ def train_one_epoch_intermediate(config, model, model_teacher, criterion, data_l
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
     #exit('Debug mode......')
-
-
 
 def train_one_epoch_intermediate_progressive(config, model, model_teacher, criterion, data_loader, optimizer, epoch, mixup_fn, layer_stage, lr_scheduler=None):
     #total_epoch = config.TRAIN.EPOCHS
