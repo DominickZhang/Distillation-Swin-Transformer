@@ -435,8 +435,23 @@ class SwinTransformerRelation(nn.Module):
     def no_weight_decay_keywords(self):
         return {'relative_position_bias_table'}
 
-    def forward_features(self, x, layer_id_list=None):
-        if len(layer_id_list) > 0:
+    def forward_features(self, x, layer_id_list=None, is_joint_distill=False):
+        if is_joint_distill:
+            x = self.patch_embed(x)   # self.patch_embed
+            if self.ape:
+                x = x + self.absolute_pos_embed # self.absolute_pos_embed
+            x = self.pos_drop(x)
+
+            layer_id = 0
+            qkv_tuple_return_list = []
+            for index, layer in enumerate(self.layers):
+                x, qkv_tuple_list = layer(x)
+                for qkv_tuple in qkv_tuple_list:
+                    if layer_id in layer_id_list:
+                        qkv_tuple_return_list.append(qkv_tuple)
+                    layer_id += 1
+            return x, qkv_tuple_return_list
+        elif len(layer_id_list) > 0:
             x = self.patch_embed(x)   # self.patch_embed
             if self.ape:
                 x = x + self.absolute_pos_embed # self.absolute_pos_embed
@@ -466,10 +481,10 @@ class SwinTransformerRelation(nn.Module):
             return x, []
 
     def forward(self, x, layer_id_list=[], is_joint_distill=False):
-        x, qkv_tuple_list = self.forward_features(x, layer_id_list)
+        x, qkv_tuple_list = self.forward_features(x, layer_id_list, is_joint_distill=is_joint_distill)
         if is_joint_distill:
             return self.head(x), qkv_tuple_list
-        if len(layer_id_list) > 0:
+        elif len(layer_id_list) > 0:
             return qkv_tuple_list
         else:
             return self.head(x)
