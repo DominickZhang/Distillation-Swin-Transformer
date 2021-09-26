@@ -880,9 +880,9 @@ if __name__ == '__main__':
     torch.distributed.barrier()
 
     seed = config.SEED + dist.get_rank()
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    cudnn.benchmark = True
+    #torch.manual_seed(seed)
+    #np.random.seed(seed)
+    #cudnn.benchmark = True
     #random.seed(seed)
 
     # linear scale the learning rate according to total batch size, may not be optimal
