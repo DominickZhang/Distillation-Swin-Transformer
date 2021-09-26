@@ -15,7 +15,7 @@ def test_teacher_logits_dist():
             data_dict[959].append(data['output'][0].tolist())
         else:
             data_dict[target_index[0].item()].append(data['output'][0].tolist())
-        if target_index[1].item() in [940]:
+        if target_index[1].item() in [940, 923]:
             data_dict[959].append(data['output'][1].tolist())
         else:
             data_dict[target_index[1].item()].append(data['output'][1].tolist())
