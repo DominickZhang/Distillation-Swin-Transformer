@@ -880,7 +880,7 @@ if __name__ == '__main__':
     torch.distributed.barrier()
 
     seed = config.SEED + dist.get_rank()
-    #torch.manual_seed(seed)
+    torch.manual_seed(seed)
     #np.random.seed(seed)
     #cudnn.benchmark = True
     #random.seed(seed)
