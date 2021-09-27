@@ -15,6 +15,7 @@ if [ $accumulation_steps==1 ]
 then
 batch_size=128
 elif [ $accumulation_steps==2 ]
+then
 batch_size=64
 else
 echo "accumulation_steps ($accumulation_steps) is not supported!"
