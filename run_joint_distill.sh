@@ -11,10 +11,10 @@ student_layer_list=$7
 teacher_layer_list=$8
 accumulation_steps=$9
 
-if [ $accumulation_steps==1 ]
+if [ $accumulation_steps -eq 1 ]
 then
 batch_size=128
-elif [ $accumulation_steps==2 ]
+elif [ $accumulation_steps -eq 2 ]
 then
 batch_size=64
 else
